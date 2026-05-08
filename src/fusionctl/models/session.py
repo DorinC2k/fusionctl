@@ -11,6 +11,7 @@ class Session(BaseModel):
     """Authentication session metadata for Oracle Fusion Cloud."""
 
     token: str = Field(..., min_length=1)
+    source: str = "manual-cookie"
     username: str | None = None
     person_id: str | None = None
     person_number: str | None = None

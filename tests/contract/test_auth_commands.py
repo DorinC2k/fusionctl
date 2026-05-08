@@ -22,6 +22,27 @@ def test_auth_login_status_logout(monkeypatch, tmp_path) -> None:
     assert "Session cleared" in logout_result.stdout
 
 
+def test_auth_login_accepts_browser_mode_options(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("FUSION_APP_DIR", str(tmp_path))
+
+    async def fake_login(self, *, url, headed, timeout_seconds=180):
+        from fusionctl.models.session import Session
+
+        _ = (self, url, headed, timeout_seconds)
+        return Session(token="JSESSIONID=abc", source="browser-profile")
+
+    monkeypatch.setattr(
+        "fusionctl.services.browser_auth_service.BrowserAuthService.login", fake_login
+    )
+
+    result = runner.invoke(app, ["auth", "login", "--browser", "--headless"])
+
+    assert result.exit_code == 0
+    assert "Authenticated" in result.stdout
+    assert "browser-profile" in result.stdout
+    assert "JSESSIONID" not in result.stdout
+
+
 def test_status_without_session(monkeypatch, tmp_path) -> None:
     monkeypatch.setenv("FUSION_APP_DIR", str(tmp_path))
 

@@ -50,3 +50,12 @@ async def test_submit_timecard_sets_verified_submit_process_mode() -> None:
     assert submitted_payload["ProcessMode"] == "TIME_SUBMIT"
     assert submitted_payload["UserContext"] == "WORKER"
     assert submitted_payload["IgnoreWarningsFlag"] is True
+
+
+def test_xsrf_token_is_extracted_from_cookie_header() -> None:
+    client = OracleClient(
+        "https://example.oraclecloud.com",
+        "JSESSIONID=abc; XSRF-TOKEN-EM2BLCV_F=token=value; bm_sv=def",
+    )
+
+    assert client._xsrf_token() == "token=value"

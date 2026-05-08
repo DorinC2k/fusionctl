@@ -63,13 +63,16 @@ class OracleClient:
         return await self._process_timecard(api_root, payload, process_mode="TIME_SUBMIT")
 
     async def refresh_bearer_token(self) -> str:
+        headers = {
+            "Accept": "application/json",
+            "Cookie": self.cookie_header,
+            "User-Agent": "fusionctl/0.1.0",
+        }
+        if xsrf_token := self._xsrf_token():
+            headers["x-xsrf-token"] = xsrf_token
         async with httpx.AsyncClient(
             timeout=self.timeout,
-            headers={
-                "Accept": "application/json",
-                "Cookie": self.cookie_header,
-                "User-Agent": "fusionctl/0.1.0",
-            },
+            headers=headers,
         ) as client:
             response = await client.get(f"{self.base_url}/fscmRestApi/tokenrelay")
         data = self._decode(response)
@@ -88,10 +91,19 @@ class OracleClient:
         }
         if self._bearer_token:
             headers["Authorization"] = f"Bearer {self._bearer_token}"
+        if xsrf_token := self._xsrf_token():
+            headers["x-xsrf-token"] = xsrf_token
         return httpx.AsyncClient(
             timeout=self.timeout,
             headers=headers,
         )
+
+    def _xsrf_token(self) -> str | None:
+        for cookie in self.cookie_header.split(";"):
+            name, separator, value = cookie.strip().partition("=")
+            if separator and name.startswith("XSRF-TOKEN"):
+                return value
+        return None
 
     async def _process_timecard(
         self,

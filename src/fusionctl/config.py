@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     def secrets_file(self) -> Path:
         return self.app_dir / "session.json"
 
+    @property
+    def browser_profile_dir(self) -> Path:
+        return self.app_dir / "browser-profile"
+
 
 def load_settings() -> Settings:
     return Settings()

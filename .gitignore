@@ -9,6 +9,7 @@ build/
 *.egg-info/
 .coverage
 .fusion-recon/
+.fusion-cli/
 .env
 .env.*
 !.env.example
