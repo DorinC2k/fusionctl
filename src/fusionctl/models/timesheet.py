@@ -26,12 +26,19 @@ class TimesheetStatus(str, Enum):
     REJECTED = "rejected"
 
 
+class TimeType(str, Enum):
+    REGULAR = "Regular"
+    PUBLIC_HOLIDAY = "Public Holiday"
+
+
 class TimeEntry(BaseModel):
     """Single time entry in a timesheet."""
 
     id: str | None = None
     date: Date
     hours: float = Field(..., ge=0.0, le=24.0)
+    time_type: TimeType = TimeType.REGULAR
+    absence_type: str | None = None
     project: Project
     task: Task
     notes: str | None = Field(None, max_length=500)
@@ -45,6 +52,10 @@ class TimeEntry(BaseModel):
         if value > Date.today():
             raise ValueError("Date cannot be in the future")
         return value
+
+    @property
+    def is_prefilled_absence(self) -> bool:
+        return self.absence_type is not None
 
 
 class Timesheet(BaseModel):

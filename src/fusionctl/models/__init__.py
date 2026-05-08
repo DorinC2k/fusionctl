@@ -2,7 +2,7 @@
 
 from fusionctl.models.project import Project, Task
 from fusionctl.models.session import CacheMetadata, Session
-from fusionctl.models.timesheet import EntryStatus, TimeEntry, Timesheet, TimesheetStatus
+from fusionctl.models.timesheet import EntryStatus, TimeEntry, Timesheet, TimesheetStatus, TimeType
 
 __all__ = [
     "CacheMetadata",
@@ -13,4 +13,5 @@ __all__ = [
     "TimeEntry",
     "Timesheet",
     "TimesheetStatus",
+    "TimeType",
 ]
