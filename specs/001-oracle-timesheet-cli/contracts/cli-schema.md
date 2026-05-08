@@ -67,7 +67,9 @@ fusion auth login [OPTIONS]
 ```
 --token <token>                 # Session cookie token (obtain from browser DevTools Network tab)
                                 # Example: bm_sv=E3A8F9F36D259512CECA0FF7AAC9627A~...
---interactive, -i               # Open browser for interactive SAML login (future: needs Playwright)
+--browser                       # Open/reuse persistent local browser profile and extract cookies
+--headless                      # Reuse browser profile without showing the browser window
+--url <url>                     # Oracle URL to open for browser-backed login
 --help, -h                      # Show help
 ```
 
@@ -100,14 +102,23 @@ fusion auth login [OPTIONS]
     6. Run: fusion auth login --token "bm_sv=..." (or pass interactively)
 ```
 
-**Interactive Mode Example (Future)**:
+**Browser Mode Example**:
 ```
-$ fusion auth login --interactive
-Opening browser for Oracle Fusion Cloud login...
-[Browser opens, user logs in with 2FA]
+$ fusion auth login --browser
+[Browser opens; first run may require 2FA]
 [CLI extracts session cookies automatically]
 ✓ Authenticated as: dorin.cobzac@endava.com
   Session token stored securely in OS keychain
+  Browser profile: persistent local profile
+```
+
+To refresh cookies later without a visible browser, reuse the same local profile:
+
+```
+$ fusion auth login --browser --headless
+✓ Authenticated
+  Session token stored securely in OS keychain
+  Token source: browser-profile
 ```
 
 **Token Input Method (MVP)**:
@@ -357,6 +368,29 @@ Notes (optional): Regular development work
 ```
 $ fusion timesheet log --date 2026-05-08 --hours 8 --project PROJ001 --task TASK1 --notes "Regular work"
 ✓ Time entry logged (ID: entry_12345)
+```
+
+**Public Holiday Adjacent Day Rule**:
+
+If Oracle has pre-added a `Public Holiday` entry for the next day and the requested date is a working day, an 8-hour log is split into two entries for the requested date:
+
+```
+$ fusion timesheet log --date 2026-05-07 --hours 8 --project WORDV266 --task 02
+✓ Time entries logged
+  2026-05-07  7.0h  Regular
+  2026-05-07  1.0h  Public Holiday
+```
+
+The pre-added public holiday day itself is preserved and not overwritten.
+
+**Prefilled Absence Rule**:
+
+If Oracle has pre-filled a date with an absence entry such as `Annual Leave MD`, the CLI preserves that entry and does not create a regular work entry for the same date.
+
+```
+$ fusion timesheet log --date 2026-02-23 --hours 8 --project WORDV266 --task 02
+✓ Time entry skipped
+  2026-02-23  8.0h  Annual Leave MD
 ```
 
 ---

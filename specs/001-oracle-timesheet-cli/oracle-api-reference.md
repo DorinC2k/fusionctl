@@ -41,19 +41,25 @@ The response contains a short-lived bearer token. Real `timeCards` calls from th
 Authorization: Bearer <tokenrelay access_token>
 Content-Type: application/vnd.oracle.adf.action+json
 Accept: application/json
+x-xsrf-token: <value from XSRF-TOKEN-* cookie>
 ```
 
 For CLI implementation, the practical auth flow is:
 
-1. Store browser cookies from the SSO session.
-2. Call `/fscmRestApi/tokenrelay` with those cookies.
-3. Use the returned bearer token for HCM REST API calls until it expires.
-4. Refresh by calling tokenrelay again; if tokenrelay returns 401, ask the user to re-authenticate.
+1. Open Oracle in a persistent local Playwright/Chromium profile.
+2. Complete Microsoft 2FA only when Azure/Oracle require it.
+3. Extract Oracle cookies from the persistent profile and store the Cookie header in the local secret store.
+4. Call `/fscmRestApi/tokenrelay` with those cookies.
+5. Use the returned bearer token for HCM REST API calls until it expires.
+6. Refresh by calling tokenrelay again; if tokenrelay returns 401, reuse `fusion auth login --browser --headless` to harvest fresh cookies from the local profile.
+
+Live testing showed tokenrelay can return `401` unless the request includes the `x-xsrf-token` header copied from the Oracle `XSRF-TOKEN-*` cookie.
 
 ### Session Expiry
 
 - Tokens expire based on server-side session timeout
-- CLI should catch 401/403 responses and prompt for re-authentication
+- CLI should catch 401/403 responses and first try browser-profile refresh before prompting for interactive re-authentication
+- Browser profile reuse avoids repeated 2FA only while the SSO session remains valid; it cannot bypass a new server-side MFA challenge
 - Implement exponential backoff for rate limiting (429 responses)
 
 ---
@@ -292,6 +298,8 @@ GET /hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/ti
   - `300004857566520`: Time Type
   - `300004857566523`: Location
 - Approved timecards can be viewed but not edited (`AllowEditFlag=false`, `AllowSubmitFlag=false` in the layout).
+- Some periods contain server-created `Public Holiday` entries before the user logs regular work. These rows are authoritative and must be preserved in the full-card save payload.
+- Some periods contain pre-filled absence entries. These rows use `AbsenceEntryFlag` and carry the absence display value in field `300004857566525`; they are also authoritative and must be preserved.
 
 ---
 
@@ -342,6 +350,37 @@ Create entries by posting the entire card save payload back to `/timeCards` with
 4. Save the full array with `ProcessMode: "TIME_SAVE"`.
 
 Live testing showed that sending multiple new entries with `TimeEntryId: 0` in a single payload can fail with a duplicate primary key error. Add multiple new rows one save at a time, or omit generated IDs only when Oracle accepts that shape for the specific payload.
+
+#### Public Holiday Adjacent Day Rule
+
+When a timecard already contains a pre-added `Public Holiday` entry for a date, preserve that holiday entry exactly as returned by Oracle. If the previous calendar day is a working day and the CLI is logging a full 8-hour day, create two entries on the previous working day:
+
+- `7` hours with time type `Regular`
+- `1` hour with time type `Public Holiday`
+
+Use the `Public Holiday` Time Type field value from the pre-added Oracle row or from `timeCardFieldValues` lookup; do not hard-code the underlying Oracle ID because it can vary by environment/layout. The full-card save payload must include both the preserved holiday row and the split previous-day rows.
+
+Verified Republic of Moldova examples:
+
+- Card `300005105736789` contains `MD Labor Day 2026` on `2026-05-01`, with Oracle rows `2026-04-30: 7 Regular + 1 Public Holiday` and `2026-05-01: 8 Public Holiday`.
+- Card `300004965689346` contains `MD New Year's Day 2026` on `2026-01-01`, with Oracle rows `2025-12-31: 1 Public Holiday` and `2026-01-01: 8 Public Holiday`.
+- Card `300005011389793` contains `MD Orthodox Christmas Day and Holiday 2026` on `2026-01-07` and `2026-01-08`, with Oracle rows including `2026-01-06: 1 Public Holiday`.
+
+#### Prefilled Absence Entries
+
+Oracle absence rows are not normal project/task/time-type rows. Live February 2026 examples showed `timeEntries` with:
+
+- `AbsenceEntryFlag` present
+- `Measure: "8"`
+- field `300004857566525` containing the absence type display value
+- no project/task/time-type/location fields on the absence row
+
+Verified examples:
+
+- Card `300005057958110`, period `2026-02-23` to `2026-03-01`, status `ENTERED`: five 8h rows for `Annual Leave MD`, field value `300000379896443`, with summary `AbsenceHours: "40.00"`, `ReportedHours: "0.00"`, `TotalHours: "40.00"`.
+- Card `300005057154971`, period `2026-02-16` to `2026-02-22`, status `APPROVED`: five 8h rows for `Medical Leave MD`, field value `300000369558737`, with summary `AbsenceHours: "40.00"`, `ReportedHours: "0.00"`, `TotalHours: "40.00"`.
+
+When logging regular work, the CLI must treat dates with an existing absence row as already occupied and skip creating regular entries for those dates. In full-card save payloads, preserve absence rows exactly as returned by Oracle, including `TimeEntryId`, `TimeEntryVersion`, `AbsenceEntryFlag`, `EntryType`, and the `timeCardFieldValues` array.
 
 ```json
 {

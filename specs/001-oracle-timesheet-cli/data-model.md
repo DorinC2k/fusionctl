@@ -33,6 +33,8 @@
 │ ├── id (str, Oracle entry ID)                        │
 │ ├── date (date)                                      │
 │ ├── hours (float, 0.0-24.0)                          │
+│ ├── time_type (enum: Regular|Public Holiday)          │
+│ ├── absence_type (str, optional)                      │
 │ ├── project (Project)                                │
 │ ├── task (Task)                                      │
 │ ├── notes (str, optional)                            │
@@ -126,11 +128,17 @@ class EntryStatus(str, Enum):
     SUBMITTED = "submitted"
     APPROVED = "approved"
 
+class TimeType(str, Enum):
+    REGULAR = "Regular"
+    PUBLIC_HOLIDAY = "Public Holiday"
+
 class TimeEntry(BaseModel):
     """Single time entry in a timesheet"""
     id: Optional[str] = None  # Oracle entry ID (None until submitted)
     date: date = Field(..., description="Entry date (YYYY-MM-DD)")
     hours: float = Field(..., ge=0.0, le=24.0, description="Hours logged (0-24)")
+    time_type: TimeType = TimeType.REGULAR
+    absence_type: Optional[str] = None
     project: Project
     task: Task
     notes: Optional[str] = Field(None, max_length=500)
@@ -156,6 +164,8 @@ class TimeEntry(BaseModel):
 
 **Validation**:
 - `hours`: 0.0 to 24.0 (no negative, no overday)
+- `time_type`: Defaults to `Regular`; Oracle pre-added holiday rows use `Public Holiday`
+- `absence_type`: Oracle absence display value, e.g. `Annual Leave MD` or `Medical Leave MD`
 - `date`: Must be valid date in YYYY-MM-DD format
 - `notes`: Max 500 chars (capture reason, context)
 - `status` enum: Only valid states allowed
@@ -232,6 +242,8 @@ class Timesheet(BaseModel):
 - `period_start` must be before `period_end`
 - `status` enum: Only valid states
 - `entries` list can be empty (draft timesheet)
+- Pre-added `Public Holiday` entries are preserved. When logging a full working day immediately before a public holiday, the planned entries are `7h Regular` plus `1h Public Holiday` on the working day.
+- Pre-filled absence entries are preserved. The CLI does not create regular work entries on dates that already contain an absence entry.
 
 **Query Methods**:
 - `total_hours`: Computed property (sum of all hours)

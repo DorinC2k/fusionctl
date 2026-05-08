@@ -100,19 +100,25 @@ poetry run fusion --version
 
 ### First Login
 
-Authenticate with Oracle Fusion Cloud by copying your active browser session cookies:
+Authenticate with Oracle Fusion Cloud through a persistent local browser profile:
+
+```bash
+fusion auth login --browser
+```
+
+The first run opens Chromium and may require Microsoft 2FA. After login, `fusionctl` stores Oracle cookies in the local secret store and keeps the browser profile under the app directory so future refreshes can reuse the SSO session:
+
+```bash
+fusion auth login --browser --headless
+```
+
+Use the manual cookie path only if browser-backed login is unavailable:
 
 ```bash
 fusion auth login --token
 ```
 
-You will be prompted for a cookie string from the Oracle Fusion web app:
-
-```
-Paste Oracle session cookie: [hidden input]
-```
-
-On success:
+On success, the CLI never prints the cookie value:
 
 ```
 ✓ Authenticated as: your-username@endava.com
@@ -123,6 +129,8 @@ Your session token is stored securely using the OS keychain:
 - **macOS**: Keychain.app
 - **Linux**: `pass` or `secretservice` (via `keyring` library)
 - **Windows**: Windows Credential Manager
+
+The browser profile is local-only and ignored by git. It can avoid repeated 2FA prompts while Azure/Oracle keep the SSO session alive, but it cannot bypass a server-side MFA challenge after the session expires or corporate policy requires re-verification.
 
 ### Check Authentication Status
 

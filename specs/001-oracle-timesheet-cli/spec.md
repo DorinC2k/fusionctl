@@ -55,6 +55,8 @@ As a user, I need to log hours and activities to my timesheet via the CLI so I c
 2. **Given** an entry was submitted, **When** the submission succeeds, **Then** the CLI displays a confirmation with entry ID and status
 3. **Given** the user wants to update an entry, **When** user runs `fusion timesheet update <entry-id> --hours <new-hours>`, **Then** the CLI updates the entry and shows confirmation
 4. **Given** multiple entries need to be logged, **When** user runs `fusion timesheet log` in interactive mode, **Then** the CLI prompts for date/hours/project/task/notes sequentially
+5. **Given** a timecard contains a pre-added `Public Holiday` entry for a day, **When** the user logs the preceding working day for 8 hours, **Then** the CLI logs 7 hours as `Regular` and 1 hour as `Public Holiday` on the preceding working day
+6. **Given** a timecard contains a pre-filled absence day such as `Annual Leave MD`, **When** the user logs that same date, **Then** the CLI preserves the absence row and does not create a regular work entry for that date
 
 ---
 
@@ -117,6 +119,8 @@ As a user, I need to export timesheet data to CSV/JSON formats so I can use it i
 - **FR-011**: System MUST provide clear error messages for all failures (network, auth, API errors)
 - **FR-012**: System MUST support interactive mode for bulk timesheet entry
 - **FR-013**: System MUST provide a help command and documentation for all CLI commands
+- **FR-014**: System MUST preserve Oracle pre-added `Public Holiday` days and split the preceding working day into 7h `Regular` plus 1h `Public Holiday` when logging a full 8-hour day
+- **FR-015**: System MUST preserve Oracle pre-filled absence entries such as `Annual Leave MD` and `Medical Leave MD` and avoid logging regular work on those dates
 
 ### Key Entities
 
