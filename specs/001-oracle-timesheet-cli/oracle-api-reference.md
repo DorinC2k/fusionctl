@@ -22,6 +22,9 @@
 
 All API requests require these cookies to be sent in the `Cookie` header:
 
+```http
+GET /hcmRestApi/rest/rv:{VERSION}/en/{API_VERSION}/timeCards
+Cookie: bm_sv={VALUE}; JSESSIONID={VALUE}
 ```
 
 ### Redwood API Authentication Discovery
@@ -46,9 +49,6 @@ For CLI implementation, the practical auth flow is:
 2. Call `/fscmRestApi/tokenrelay` with those cookies.
 3. Use the returned bearer token for HCM REST API calls until it expires.
 4. Refresh by calling tokenrelay again; if tokenrelay returns 401, ask the user to re-authenticate.
-GET /hcmRestApi/rest/rv:{VERSION}/en/{API_VERSION}/timeCards \
-  -H "Cookie: bm_sv={VALUE}; JSESSIONID={VALUE}"
-```
 
 ### Session Expiry
 
@@ -295,83 +295,199 @@ GET /hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/ti
 
 ---
 
-### 4. Create or Update Timecard Entries (Discovered, Not Mutated)
+### 4. Create or Update Timecard Entries (Verified Live)
 
-Oracle exposes create/update through the `timeCards` resource and child collections. These were discovered from OpenAPI metadata, but no real create/update call was executed during reconnaissance.
+Oracle exposes create/update through the top-level `timeCards` resource. Live testing showed that worker-context mutations succeed via `POST /timeCards`; direct child collection writes to `/timeCards/{id}/child/timeEntries` returned 404/403 in this environment.
 
-**Create top-level timecard**:
+#### 4.1 Create Current-Period Timecard
 
 ```http
 POST /timeCards
 Content-Type: application/json
 ```
 
-Top-level writable fields include:
+Verified request:
 
 ```json
 {
+  "TimeCardId": 0,
+  "TimeCardVersion": 0,
   "PersonId": "100000000355154",
   "StartDate": "2026-05-04T00:00:00+00:00",
   "StopDate": "2026-05-10T23:59:59.999+00:00",
-  "TimeCardId": "optional if updating existing card",
-  "TimeCardVersion": 1,
-  "Status": "SAVED",
-  "ProcessMode": "SAVE",
-  "Source": "ORA_HWM_TIME_ENTRY",
-  "UserContext": "WORKER",
-  "timeEntries": []
+  "UserContext": "WORKER"
 }
 ```
 
-**Create child time entry**:
+Verified response:
 
 ```http
-POST /timeCards/{timeCards_Id}/child/timeEntries
+201 Created
+{}
 ```
 
-Writable fields:
+**Important**: The Redwood UI attempted `UserContext: "TIME_MANAGER"` on the Add page and Oracle rejected it with `HXT-1665163`. CLI writes should use `UserContext: "WORKER"`.
+
+After creation, fetch details with `timeCardEntryDetails` to obtain `TimeCardId`, `TimeCardVersion`, layout fields, and edit flags.
+
+#### 4.2 Add Time Entry
+
+Create entries by posting the entire card save payload back to `/timeCards` with `ProcessMode: "TIME_SAVE"` and a populated `timeEntries` array:
 
 ```json
 {
-  "TimeEntryId": "optional when creating",
-  "TimeEntryVersion": 1,
-  "TimeCardId": "300005105736789",
-  "UnitOfMeasure": "HR",
-  "StartTime": null,
-  "StopTime": null,
-  "Measure": "8",
+  "TimeCardId": "300005124780107",
+  "TimeCardVersion": 1,
   "PersonId": "100000000355154",
-  "Comments": null,
-  "GroupingSequence": 1,
-  "EntryDate": "2026-05-04T00:00:00+00:00",
-  "timeCardFieldValues": [
+  "StartDate": "2026-05-04T00:00:00+00:00",
+  "StopDate": "2026-05-10T23:59:59.999+00:00",
+  "ProcessMode": "TIME_SAVE",
+  "UserContext": "WORKER",
+  "IgnoreWarningsFlag": false,
+  "timeEntries": [
     {
-      "TimeCardFieldId": "300004857566518",
-      "Value": "300004669699898"
-    },
-    {
-      "TimeCardFieldId": "300004857566519",
-      "Value": "100002436964151"
-    },
-    {
-      "TimeCardFieldId": "300004857566520",
-      "Value": "300003879160145"
-    },
-    {
-      "TimeCardFieldId": "300004857566523",
-      "Value": "Work from home"
+      "TimeEntryId": 0,
+      "TimeEntryVersion": 0,
+      "TimeCardId": "300005124780107",
+      "UnitOfMeasure": "HR",
+      "StartTime": null,
+      "StopTime": null,
+      "Measure": "1",
+      "PersonId": "100000000355154",
+      "Comments": "created by fusionctl",
+      "GroupingSequence": 0,
+      "EntryDate": "2026-05-04T00:00:00+00:00",
+      "timeCardFieldValues": [
+        {
+          "TimeCardFieldId": "300004857566518",
+          "Value": "300004669699898"
+        },
+        {
+          "TimeCardFieldId": "300004857566519",
+          "Value": "100002436964151"
+        },
+        {
+          "TimeCardFieldId": "300004857566520",
+          "Value": "300003879160145"
+        },
+        {
+          "TimeCardFieldId": "300004857566523",
+          "Value": "Work from home"
+        },
+        {
+          "TimeCardFieldId": "300004857566527",
+          "Value": null
+        },
+        {
+          "TimeCardFieldId": "300004857566525",
+          "Value": null
+        },
+        {
+          "TimeCardFieldId": "300004857566486",
+          "Value": "300000002560077"
+        },
+        {
+          "TimeCardFieldId": "300004857566490",
+          "Value": "300000001598197"
+        },
+        {
+          "TimeCardFieldId": "300004857566484",
+          "Value": "ST"
+        },
+        {
+          "TimeCardFieldId": "300004857566482",
+          "Value": "300000001656097"
+        }
+      ]
     }
   ]
 }
 ```
 
-**Update child time entry**:
+Verified response:
 
 ```http
-PATCH /timeCards/{timeCards_Id}/child/timeEntries/{timeCards_timeEntries_Id}
+201 Created
+{}
 ```
 
-The patch request accepts the same writable time entry fields. Include `TimeEntryVersion` from the latest detail response to avoid stale writes.
+Re-fetching details after save returned a server-created entry:
+
+```json
+{
+  "TimeEntryId": "300005124722679",
+  "TimeEntryVersion": 1,
+  "Measure": "1",
+  "EntryDate": "2026-05-04T00:00:00+00:00",
+  "Comments": "created by fusionctl"
+}
+```
+
+#### 4.3 Update Time Entry
+
+Update entries with the same top-level `POST /timeCards` save payload. Use the latest `TimeCardVersion` and `TimeEntryVersion` from `timeCardEntryDetails`, and include the full `timeCardFieldValues` array.
+
+Verified update:
+
+```json
+{
+  "TimeCardId": "300005124780107",
+  "TimeCardVersion": 2,
+  "PersonId": "100000000355154",
+  "StartDate": "2026-05-04T00:00:00+00:00",
+  "StopDate": "2026-05-10T23:59:59.999+00:00",
+  "ProcessMode": "TIME_SAVE",
+  "UserContext": "WORKER",
+  "IgnoreWarningsFlag": false,
+  "timeEntries": [
+    {
+      "TimeEntryId": "300005124722679",
+      "TimeEntryVersion": 1,
+      "TimeCardId": "300005124780107",
+      "UnitOfMeasure": "HR",
+      "Measure": "2",
+      "Comments": "updated by fusionctl",
+      "GroupingSequence": 0,
+      "EntryDate": "2026-05-04T00:00:00+00:00",
+      "timeCardFieldValues": ["same full array as create"]
+    }
+  ]
+}
+```
+
+Verified response was `201 {}`. Re-fetching details returned `TimeEntryVersion: 2` and `Measure: "2"`.
+
+#### 4.4 Field Value Lookup
+
+Use `timeCardLayouts.items[].timeCardFields.items[].RestURI` and append `SearchTerm` for autocomplete lookup. Example for project:
+
+```http
+GET /timeCardFieldValues
+  ?onlyData=true
+  &offset=0
+  &limit=25
+  &finder=findByWord;SearchTerm=WORDV266,TcfId=300004857566518,UserType=WORKER,PersonId=100000000355154,StartDate=2026-05-04,EndDate=2026-05-10
+```
+
+Verified response:
+
+```json
+{
+  "items": [
+    {
+      "Code": "300004669699898",
+      "DisplayValue": "WORDV266 - RedHat Helix EU",
+      "UnitOfMeasure": "HR"
+    }
+  ]
+}
+```
+
+Task lookup depends on project and assignment bindings:
+
+```http
+finder=findByWord;SearchTerm=02,TcfId=300004857566519,UserType=WORKER,PersonId=100000000355154,StartDate=2026-05-04,EndDate=2026-05-10,BindTcfId1=300004857566486,BindTcfId2=300004857566518,BindTcf1Value=300000002560077,BindTcf2Value={PROJECT_CODE_ID}
+```
 
 **Submit or process card**:
 
@@ -382,7 +498,7 @@ POST /timeCards/action/validateTimeCards
 POST /timeCards/action/computeTimeTotals
 ```
 
-Use metadata from `/describe.openapi?metadataMode=minimal&resources=timeCards` to build action payloads. Treat these as high-risk until tested against a draft/sandbox card.
+Use metadata from `/describe.openapi?metadataMode=minimal&resources=timeCards` to build action payloads. Treat submit as high-risk until the CLI can show a confirmation preview.
 
 ### 5. Legacy/Initial Mutation Hypothesis
 

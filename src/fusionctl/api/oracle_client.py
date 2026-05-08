@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import httpx
 
 from fusionctl.exceptions import AuthenticationError, OracleApiError
@@ -25,6 +27,38 @@ class OracleClient:
         async with self._client() as client:
             response = await client.post(url, json=payload)
         return self._decode(response)
+
+    async def create_timecard(
+        self,
+        api_root: str,
+        *,
+        person_id: str,
+        start_date: str,
+        stop_date: str,
+    ) -> dict[str, object]:
+        payload: dict[str, object] = {
+            "TimeCardId": 0,
+            "TimeCardVersion": 0,
+            "PersonId": person_id,
+            "StartDate": start_date,
+            "StopDate": stop_date,
+            "UserContext": "WORKER",
+        }
+        return await self.post(f"{api_root.rstrip('/')}/timeCards", payload)
+
+    async def save_timecard_entries(
+        self,
+        api_root: str,
+        payload: dict[str, Any],
+    ) -> dict[str, object]:
+        """Save card entries using Oracle Redwood's verified parent-save workflow."""
+        save_payload: dict[str, Any] = {
+            **payload,
+            "ProcessMode": payload.get("ProcessMode", "TIME_SAVE"),
+            "UserContext": payload.get("UserContext", "WORKER"),
+            "IgnoreWarningsFlag": payload.get("IgnoreWarningsFlag", False),
+        }
+        return await self.post(f"{api_root.rstrip('/')}/timeCards", save_payload)
 
     async def refresh_bearer_token(self) -> str:
         async with httpx.AsyncClient(
