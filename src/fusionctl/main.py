@@ -2,6 +2,7 @@ import typer
 
 from fusionctl import __version__
 from fusionctl.cli.commands import auth
+from fusionctl.cli.runtime import configure_runtime
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
@@ -28,12 +29,24 @@ def main(
         callback=version_callback,
         is_eager=True,
     ),
-    verbose: bool = typer.Option(False, "--verbose", help="Enable verbose output."),
+    verbose: bool = typer.Option(
+        False,
+        "-vv",
+        "--verbose",
+        help="Enable diagnostic logging.",
+    ),
+    very_verbose: bool = typer.Option(
+        False,
+        "-vvv",
+        "--very-verbose",
+        help="Enable maximum diagnostic logging.",
+    ),
     config: str | None = typer.Option(None, "--config", help="Override config file path."),
     no_cache: bool = typer.Option(False, "--no-cache", help="Ignore cached data."),
 ) -> None:
     """Manage Oracle Fusion timesheets from the terminal."""
-    _ = (verbose, config, no_cache)
+    verbosity = 3 if very_verbose else 2 if verbose else 0
+    configure_runtime(verbosity=verbosity, config_path=config, no_cache=no_cache)
 
 
 app.add_typer(auth.app, name="auth")

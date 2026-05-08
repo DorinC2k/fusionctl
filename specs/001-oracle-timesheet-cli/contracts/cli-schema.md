@@ -39,7 +39,8 @@ fusion/                        # Main group (app.callback)
 ```
 --help, -h                      # Show help (available on all commands)
 --version, -v                   # Show version
---verbose                       # Enable debug logging
+-vv, --verbose                  # Diagnostic logging
+-vvv                            # Maximum diagnostic logging
 --config <path>                 # Override config file location (default: ~/.fusion-cli/config.yaml)
 --no-cache                      # Ignore cached data, fetch fresh
 ```
@@ -649,10 +650,15 @@ Example: fusion timesheet view --help
 
 **Verbose Mode**:
 ```
---verbose flag shows debug logs:
-- HTTP request/response details
-- Cache hit/miss info
-- Timing information
+No verbosity flag: only essential command output, confirmations, and errors.
+-v: version shortcut, not logging.
+-vv: diagnostic logging, such as config/cache mode.
+-vvv: maximum diagnostics for API/cache troubleshooting.
+
+Sensitive values are never logged:
+- cookies
+- bearer/access/refresh/id tokens
+- passwords
 ```
 
 **Config Override**:
