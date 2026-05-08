@@ -52,13 +52,15 @@ class OracleClient:
         payload: dict[str, Any],
     ) -> dict[str, object]:
         """Save card entries using Oracle Redwood's verified parent-save workflow."""
-        save_payload: dict[str, Any] = {
-            **payload,
-            "ProcessMode": payload.get("ProcessMode", "TIME_SAVE"),
-            "UserContext": payload.get("UserContext", "WORKER"),
-            "IgnoreWarningsFlag": payload.get("IgnoreWarningsFlag", False),
-        }
-        return await self.post(f"{api_root.rstrip('/')}/timeCards", save_payload)
+        return await self._process_timecard(api_root, payload, process_mode="TIME_SAVE")
+
+    async def submit_timecard(
+        self,
+        api_root: str,
+        payload: dict[str, Any],
+    ) -> dict[str, object]:
+        """Submit a card using Oracle Redwood's verified parent-submit workflow."""
+        return await self._process_timecard(api_root, payload, process_mode="TIME_SUBMIT")
 
     async def refresh_bearer_token(self) -> str:
         async with httpx.AsyncClient(
@@ -90,6 +92,21 @@ class OracleClient:
             timeout=self.timeout,
             headers=headers,
         )
+
+    async def _process_timecard(
+        self,
+        api_root: str,
+        payload: dict[str, Any],
+        *,
+        process_mode: str,
+    ) -> dict[str, object]:
+        process_payload: dict[str, Any] = {
+            **payload,
+            "ProcessMode": process_mode,
+            "UserContext": payload.get("UserContext", "WORKER"),
+            "IgnoreWarningsFlag": payload.get("IgnoreWarningsFlag", False),
+        }
+        return await self.post(f"{api_root.rstrip('/')}/timeCards", process_payload)
 
     def _decode(self, response: httpx.Response) -> dict[str, object]:
         if response.status_code in {401, 403}:

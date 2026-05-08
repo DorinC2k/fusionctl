@@ -334,6 +334,15 @@ After creation, fetch details with `timeCardEntryDetails` to obtain `TimeCardId`
 
 Create entries by posting the entire card save payload back to `/timeCards` with `ProcessMode: "TIME_SAVE"` and a populated `timeEntries` array:
 
+**Important**: the `timeEntries` array behaves as the desired complete entry set for the card. If the payload contains only one new entry, Oracle replaces the previous entries with that one entry. To add a line without deleting existing lines:
+
+1. Fetch the latest card detail through `timeCardEntryDetails`.
+2. Copy every existing `timeEntries.items[]` row with its current `TimeEntryId`, `TimeEntryVersion`, and full `timeCardFieldValues` array.
+3. Append one new entry with `TimeEntryId: 0` and `TimeEntryVersion: 0`.
+4. Save the full array with `ProcessMode: "TIME_SAVE"`.
+
+Live testing showed that sending multiple new entries with `TimeEntryId: 0` in a single payload can fail with a duplicate primary key error. Add multiple new rows one save at a time, or omit generated IDs only when Oracle accepts that shape for the specific payload.
+
 ```json
 {
   "TimeCardId": "300005124780107",
@@ -457,7 +466,62 @@ Verified update:
 
 Verified response was `201 {}`. Re-fetching details returned `TimeEntryVersion: 2` and `Measure: "2"`.
 
-#### 4.4 Field Value Lookup
+#### 4.4 Submit Timecard for Approval (Verified Live)
+
+Submit uses the same top-level parent workflow as save, but with `ProcessMode: "TIME_SUBMIT"`. The submit payload must include the full current card state, including all entries and latest entry versions.
+
+```http
+POST /timeCards
+Content-Type: application/vnd.oracle.adf.action+json
+```
+
+Verified request shape:
+
+```json
+{
+  "TimeCardId": "300005124780107",
+  "TimeCardVersion": 2,
+  "PersonId": "100000000355154",
+  "StartDate": "2026-05-04T00:00:00+00:00",
+  "StopDate": "2026-05-10T23:59:59.999+00:00",
+  "ProcessMode": "TIME_SUBMIT",
+  "UserContext": "WORKER",
+  "IgnoreWarningsFlag": false,
+  "timeEntries": [
+    {
+      "TimeEntryId": "300005124782455",
+      "TimeEntryVersion": 1,
+      "TimeCardId": "300005124780107",
+      "UnitOfMeasure": "HR",
+      "Measure": "8",
+      "EntryDate": "2026-05-04T00:00:00+00:00",
+      "timeCardFieldValues": ["same full field-value array as save"]
+    }
+  ]
+}
+```
+
+Verified successful response:
+
+```http
+201 Created
+{}
+```
+
+Re-fetching the card after submit returned:
+
+```json
+{
+  "Status": "SUBMITTED",
+  "TimeCardVersion": 2
+}
+```
+
+Verified validation failure: submitting a saved card with insufficient weekday hours returned `400 Bad Request` and `o:errorDetails` entries identifying the affected weekday entries. The CLI should surface those messages and leave the card in `SAVED` state.
+
+Older action-style endpoints such as `/timeCards/{id}/action/submit`, `/timeCards/action/submitAction`, and `/timeCards/action/processTimeCard` were not the path used by the Redwood UI in this environment. Treat them as unverified unless future browser traffic proves otherwise.
+
+#### 4.5 Field Value Lookup
 
 Use `timeCardLayouts.items[].timeCardFields.items[].RestURI` and append `SearchTerm` for autocomplete lookup. Example for project:
 
@@ -488,17 +552,6 @@ Task lookup depends on project and assignment bindings:
 ```http
 finder=findByWord;SearchTerm=02,TcfId=300004857566519,UserType=WORKER,PersonId=100000000355154,StartDate=2026-05-04,EndDate=2026-05-10,BindTcfId1=300004857566486,BindTcfId2=300004857566518,BindTcf1Value=300000002560077,BindTcf2Value={PROJECT_CODE_ID}
 ```
-
-**Submit or process card**:
-
-```http
-POST /timeCards/action/processTimeCard
-POST /timeCards/action/submitAction
-POST /timeCards/action/validateTimeCards
-POST /timeCards/action/computeTimeTotals
-```
-
-Use metadata from `/describe.openapi?metadataMode=minimal&resources=timeCards` to build action payloads. Treat submit as high-risk until the CLI can show a confirmation preview.
 
 ### 5. Legacy/Initial Mutation Hypothesis
 
@@ -563,31 +616,6 @@ POST /timeCards
 - `400 Bad Request`: Invalid data format or business rule violation
 - `403 Forbidden`: Cannot edit submitted/approved timecard
 - `404 Not Found`: Timecard or entry not found
-
----
-
-### 5. Submit Timecard for Approval
-
-**Endpoint**:
-```
-POST /timeCards/{TIMECARD_ID}/action/submit
-```
-
-**Request Body**:
-```json
-{}
-```
-
-**Response** (200 OK):
-```json
-{
-  "timecardId": "300005105736789",
-  "status": "SUBMITTED",
-  "message": "Timecard submitted successfully"
-}
-```
-
-**Purpose**: Change timecard status from DRAFT to SUBMITTED
 
 ---
 
@@ -723,16 +751,16 @@ POST /timeCards/action/findByAdvancedSearchQuery
 → Get list of timecards
 
 # 3. Get details of one timecard
-GET /timeCards/{TIMECARD_ID}
+GET /timeCardEntryDetails?finder=findByTimeCardId;TimeCardId={TIMECARD_ID},UserContext=WORKER
 → Get all entries for the period
 
-# 4. Add a new entry
+# 4. Add a new entry or update an existing entry
 POST /timeCards
-→ Create new line item
+→ Save the full desired entry set with ProcessMode=TIME_SAVE
 
 # 5. Submit for approval
-POST /timeCards/{TIMECARD_ID}/action/submit
-→ Change status to SUBMITTED
+POST /timeCards
+→ Submit the full current entry set with ProcessMode=TIME_SUBMIT
 
 # 6. Check attestation
 GET /timeCardAttestations?finder=findByPersonId;PersonId={PERSON_ID}
