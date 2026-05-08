@@ -21,3 +21,13 @@ poetry run poe test
 poetry run poe lint
 poetry run poe typecheck
 ```
+
+## Standalone Builds
+
+Build a standalone executable for the current OS:
+
+```bash
+poetry run poe bundle
+```
+
+The executable is written to `dist/`. Build Linux and Windows artifacts on their matching OS runners. See [Standalone Distribution](docs/distribution.md).
