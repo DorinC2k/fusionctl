@@ -1,0 +1,641 @@
+# CLI Command Schema: Oracle Fusion Timesheet CLI
+
+**Version**: 1.0  
+**Status**: Contract definition for Typer CLI  
+**Framework**: Typer (Click-based) with Rich formatting
+
+---
+
+## Command Structure
+
+```
+fusion/                        # Main group (app.callback)
+├── auth                       # Authentication commands
+│   ├── login                  # Authenticate with Oracle Fusion
+│   ├── logout                 # Clear local session
+│   └── status                 # Show current auth status
+├── timesheet                  # Timesheet management
+│   ├── list                   # List available timesheets
+│   ├── view                   # View specific timesheet details
+│   ├── log                    # Log hours to a timesheet
+│   ├── update                 # Update a time entry
+│   └── summary                # Show timesheet summary
+├── cache                      # Cache management
+│   ├── clear                  # Clear all cache
+│   └── refresh                # Force refresh from server
+└── export                     # Export timesheet data
+    └── timesheet              # Export timesheet to CSV/JSON
+```
+
+---
+
+## Command Definitions
+
+### GROUP: `fusion` (root)
+
+**Purpose**: Application entry point with global flags
+
+**Global Flags**:
+```
+--help, -h                      # Show help (available on all commands)
+--version, -v                   # Show version
+--verbose                       # Enable debug logging
+--config <path>                 # Override config file location (default: ~/.fusion-cli/config.yaml)
+--no-cache                      # Ignore cached data, fetch fresh
+```
+
+**Output Format**:
+```
+CLI Name: fusion
+Description: Oracle Fusion Timesheet CLI - Manage timesheets locally without web UI
+Version: 0.1.0
+Usage: fusion [OPTIONS] COMMAND [ARGS]...
+```
+
+---
+
+### COMMAND: `fusion auth login`
+
+**Purpose**: Authenticate user with Oracle Fusion Cloud (ECLF)
+
+**Signature**:
+```
+fusion auth login [OPTIONS]
+```
+
+**Options**:
+```
+--token <token>                 # Session cookie token (obtain from browser DevTools Network tab)
+                                # Example: bm_sv=E3A8F9F36D259512CECA0FF7AAC9627A~...
+--interactive, -i               # Open browser for interactive SAML login (future: needs Playwright)
+--help, -h                      # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Session authenticated and stored
+1   — Failure: Invalid token
+2   — Failure: Token expired or invalid format
+3   — Failure: API verification failed
+```
+
+**Output on Success (Token Method)**:
+```
+✓ Authenticated as: dorin.cobzac@endava.com (Person ID: 100000000355154)
+  Session token stored securely in OS keychain
+  Token retrieved from: eclf.fa.em2.oraclecloud.com
+  Person Number: 5237
+```
+
+**Output on Failure**:
+```
+✗ Authentication failed: Invalid or expired token
+  Token must be a valid session cookie from eclf.fa.em2.oraclecloud.com
+  To obtain a token:
+    1. Go to https://eclf.fa.em2.oraclecloud.com
+    2. Log in with your Oracle Fusion credentials
+    3. Open DevTools (F12) → Network tab
+    4. Look for API requests with 'bm_sv' or 'JSESSIONID' cookies
+    5. Copy the full cookie value
+    6. Run: fusion auth login --token "bm_sv=..." (or pass interactively)
+```
+
+**Interactive Mode Example (Future)**:
+```
+$ fusion auth login --interactive
+Opening browser for Oracle Fusion Cloud login...
+[Browser opens, user logs in with 2FA]
+[CLI extracts session cookies automatically]
+✓ Authenticated as: dorin.cobzac@endava.com
+  Session token stored securely in OS keychain
+```
+
+**Token Input Method (MVP)**:
+```
+$ fusion auth login --token
+Paste your session token (from browser DevTools):
+Enter token: [user pastes bm_sv=... ]
+✓ Authenticated as: dorin.cobzac@endava.com
+  Session token stored securely in OS keychain
+```
+
+**Acceptance Scenario**:
+```
+$ fusion auth login --token "bm_sv=E3A8F9F36D259512CECA0FF7AAC9627A~..."
+✓ Authenticated as: dorin.cobzac@endava.com (Person ID: 100000000355154)
+  Session token stored securely in OS keychain
+  Person Number: 5237
+```
+
+**Token Validation**:
+- CLI makes test API call to `/employmentInfo` to verify token validity
+- If successful, stores token in OS keychain
+- If failed, returns 403/401 errors from API
+
+---
+
+### COMMAND: `fusion auth logout`
+
+**Purpose**: Clear local session and cached credentials
+
+**Signature**:
+```
+fusion auth logout [OPTIONS]
+```
+
+**Options**:
+```
+--help, -h                      # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Session cleared
+1   — Failure: No active session to clear
+```
+
+**Output on Success**:
+```
+✓ Session cleared
+  You are now logged out. Use 'fusion auth login' to authenticate again.
+```
+
+---
+
+### COMMAND: `fusion auth status`
+
+**Purpose**: Show current authentication status
+
+**Signature**:
+```
+fusion auth status [OPTIONS]
+```
+
+**Options**:
+```
+--help, -h                      # Show help
+```
+
+**Exit Codes**:
+```
+0   — Authenticated: User session is valid
+1   — Not authenticated: No active session
+2   — Expired: Session token has expired
+```
+
+**Output if Authenticated**:
+```
+✓ Status: Authenticated
+  Username: user@example.com
+  Expires: 2026-05-15 10:00:00 UTC (or "Never" if no expiry)
+  Cached since: 2026-05-08 10:00:00 UTC
+```
+
+**Output if Not Authenticated**:
+```
+✗ Status: Not authenticated
+  Use 'fusion auth login' to authenticate
+```
+
+---
+
+### COMMAND: `fusion timesheet list`
+
+**Purpose**: List all available timesheets
+
+**Signature**:
+```
+fusion timesheet list [OPTIONS]
+```
+
+**Options**:
+```
+--status <status>              # Filter by status: draft|submitted|approved|rejected (optional, all if not specified)
+--format <format>              # Output format: table|json (default: table)
+--limit <n>                    # Show last N timesheets (default: 10)
+--help, -h                      # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Timesheets listed
+1   — Failure: Not authenticated
+2   — Failure: Network error
+3   — Failure: No timesheets found
+```
+
+**Output (table format)**:
+```
+ID              Period          Status      Total Entries  Total Hours
+─────────────────────────────────────────────────────────────────────────
+ts_20260505    2026-05-05 to    submitted   5              40.0
+               2026-05-09
+ts_20260428    2026-04-28 to    approved    5              40.0
+               2026-05-02
+ts_20260421    2026-04-21 to    draft       3              24.0
+               2026-04-25
+```
+
+**Output (json format)**:
+```json
+{
+  "timesheets": [
+    {
+      "id": "ts_20260505",
+      "period_start": "2026-05-05",
+      "period_end": "2026-05-09",
+      "status": "submitted",
+      "total_entries": 5,
+      "total_hours": 40.0,
+      "created_at": "2026-05-05T08:00:00Z",
+      "updated_at": "2026-05-08T17:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### COMMAND: `fusion timesheet view`
+
+**Purpose**: View detailed timesheet with all entries
+
+**Signature**:
+```
+fusion timesheet view <TIMESHEET_ID> [OPTIONS]
+```
+
+**Arguments**:
+```
+TIMESHEET_ID                    # Oracle timesheet ID (required)
+```
+
+**Options**:
+```
+--format <format>              # Output format: table|json|csv (default: table)
+--date <date>                  # Filter entries by date (YYYY-MM-DD, optional)
+--project <code>               # Filter entries by project code (optional)
+--help, -h                      # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Timesheet viewed
+1   — Failure: Not authenticated
+2   — Failure: Timesheet not found
+3   — Failure: Network error
+```
+
+**Output (table format)**:
+```
+Timesheet: ts_20260505
+Period: 2026-05-05 to 2026-05-09 | Status: submitted | Total Hours: 40.0
+
+Date        Project     Task         Hours  Notes              Status
+────────────────────────────────────────────────────────────────────────
+2026-05-08  PROJ001     TASK1        8.0    Regular work       submitted
+2026-05-07  PROJ001     TASK1        8.0    Regular work       submitted
+2026-05-06  PROJ001     TASK2        8.0    Testing & bug fix  submitted
+2026-05-05  PROJ001     TASK1        8.0    Regular work       submitted
+2026-05-09  PROJ002     TASK3        8.0    Client meeting     submitted
+```
+
+---
+
+### COMMAND: `fusion timesheet log`
+
+**Purpose**: Log hours to a timesheet (interactive or one-shot)
+
+**Signature**:
+```
+fusion timesheet log [OPTIONS]
+```
+
+**Options**:
+```
+--date <date>                  # Entry date (YYYY-MM-DD, required if not interactive)
+--hours <hours>                # Hours logged (0.0-24.0, required if not interactive)
+--project <code>               # Project code (required if not interactive)
+--task <code>                  # Task code (required if not interactive)
+--notes <notes>                # Entry notes (optional)
+--interactive, -i              # Interactive mode (prompt for each field)
+--help, -h                      # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Entry logged
+1   — Failure: Not authenticated
+2   — Failure: Validation error (invalid hours, future date, etc.)
+3   — Failure: Network error
+4   — Failure: Timesheet not found or is read-only
+```
+
+**Output on Success**:
+```
+✓ Time entry logged
+  ID: entry_12345
+  Date: 2026-05-08
+  Hours: 8.0
+  Project: PROJ001 (Customer Portal)
+  Task: TASK1 (Backend API)
+  Status: submitted
+```
+
+**Interactive Mode Output**:
+```
+$ fusion timesheet log --interactive
+Date (YYYY-MM-DD) [default: today]: 2026-05-08
+Hours (0-24): 8
+Project code: PROJ001
+Task code: TASK1
+Notes (optional): Regular development work
+✓ Time entry logged (ID: entry_12345)
+```
+
+**One-shot Mode**:
+```
+$ fusion timesheet log --date 2026-05-08 --hours 8 --project PROJ001 --task TASK1 --notes "Regular work"
+✓ Time entry logged (ID: entry_12345)
+```
+
+---
+
+### COMMAND: `fusion timesheet update`
+
+**Purpose**: Update an existing time entry
+
+**Signature**:
+```
+fusion timesheet update <ENTRY_ID> [OPTIONS]
+```
+
+**Arguments**:
+```
+ENTRY_ID                       # Oracle time entry ID (required)
+```
+
+**Options**:
+```
+--hours <hours>                # Update hours (0.0-24.0, optional)
+--project <code>               # Update project (optional)
+--task <code>                  # Update task (optional)
+--notes <notes>                # Update notes (optional)
+--help, -h                      # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Entry updated
+1   — Failure: Not authenticated
+2   — Failure: Entry not found
+3   — Failure: Validation error
+4   — Failure: Cannot update submitted entry (read-only)
+```
+
+**Output on Success**:
+```
+✓ Time entry updated
+  ID: entry_12345
+  Hours: 8.0 → 9.0
+  Notes: "Regular work" → "Regular work + standup"
+```
+
+---
+
+### COMMAND: `fusion timesheet summary`
+
+**Purpose**: Show aggregated timesheet summary (this week/month, by project)
+
+**Signature**:
+```
+fusion timesheet summary [OPTIONS]
+```
+
+**Options**:
+```
+--range <range>                # Time range: week|month|custom (default: week)
+--start <date>                 # Custom start date (YYYY-MM-DD, required if --range=custom)
+--end <date>                   # Custom end date (YYYY-MM-DD, required if --range=custom)
+--format <format>              # Output format: table|json (default: table)
+--help, -h                      # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Summary displayed
+1   — Failure: Not authenticated
+2   — Failure: Invalid date range
+```
+
+**Output (table format)**:
+```
+Timesheet Summary: Week of May 5-9, 2026
+
+┌─ Totals ──────────────────┐
+│ Total Hours: 40.0         │
+│ Submitted: 5              │
+│ Draft: 0                  │
+│ Approved: 0               │
+└─────────────────────────┘
+
+┌─ By Project ──────────────┐
+│ PROJ001: 32.0 hours       │
+│ PROJ002: 8.0 hours        │
+└─────────────────────────┘
+
+┌─ By Status ───────────────┐
+│ Submitted: 5              │
+│ Draft: 0                  │
+└─────────────────────────┘
+```
+
+---
+
+### COMMAND: `fusion cache clear`
+
+**Purpose**: Clear all cached timesheet data
+
+**Signature**:
+```
+fusion cache clear [OPTIONS]
+```
+
+**Options**:
+```
+--confirm, -c                  # Skip confirmation prompt
+--help, -h                      # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Cache cleared
+1   — Failure: Cache not found or already empty
+```
+
+**Output**:
+```
+Warning: This will delete all cached timesheet data locally.
+Are you sure? (y/N): y
+✓ Cache cleared
+  Deleted: 12 cached timesheets, 87 entries
+```
+
+---
+
+### COMMAND: `fusion cache refresh`
+
+**Purpose**: Force refresh of cached data from server
+
+**Signature**:
+```
+fusion cache refresh [OPTIONS]
+```
+
+**Options**:
+```
+--help, -h                      # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Cache refreshed
+1   — Failure: Not authenticated
+2   — Failure: Network error
+```
+
+**Output**:
+```
+⟳ Refreshing timesheet data from Oracle Fusion...
+✓ Cache refreshed
+  Fetched: 5 timesheets, 23 entries
+  Last updated: 2026-05-08 14:30:00 UTC
+```
+
+---
+
+### COMMAND: `fusion export timesheet`
+
+**Purpose**: Export timesheet data to CSV or JSON
+
+**Signature**:
+```
+fusion export timesheet <TIMESHEET_ID> [OPTIONS]
+```
+
+**Arguments**:
+```
+TIMESHEET_ID                   # Oracle timesheet ID to export (required)
+```
+
+**Options**:
+```
+--format <format>              # Export format: csv|json (default: csv)
+--output <path>                # Output file path (default: timesheet_<id>.<format>)
+--help, -h                      # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Timesheet exported
+1   — Failure: Not authenticated
+2   — Failure: Timesheet not found
+3   — Failure: Cannot write to output path
+```
+
+**Output**:
+```
+✓ Timesheet exported
+  Format: CSV
+  File: ./timesheet_ts_20260505.csv
+  Entries: 5
+  Size: 2.3 KB
+```
+
+**CSV Output** (`timesheet_ts_20260505.csv`):
+```
+date,project_code,project_name,task_code,task_name,hours,notes,status
+2026-05-08,PROJ001,Customer Portal,TASK1,Backend API,8.0,Regular work,submitted
+2026-05-07,PROJ001,Customer Portal,TASK1,Backend API,8.0,Regular work,submitted
+2026-05-06,PROJ001,Customer Portal,TASK2,Testing,8.0,Testing & bug fix,submitted
+```
+
+**JSON Output** (`timesheet_ts_20260505.json`):
+```json
+{
+  "timesheet": {
+    "id": "ts_20260505",
+    "period_start": "2026-05-05",
+    "period_end": "2026-05-09",
+    "status": "submitted",
+    "entries": [
+      {
+        "date": "2026-05-08",
+        "project": "PROJ001",
+        "task": "TASK1",
+        "hours": 8.0,
+        "notes": "Regular work"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## Error Handling Contract
+
+**All Commands** must handle and display these errors appropriately:
+
+| Error | Exit Code | Message Pattern |
+|-------|-----------|-----------------|
+| Not authenticated | 1 | `✗ Not authenticated. Use 'fusion auth login' to begin.` |
+| Network timeout | 2 | `✗ Network timeout (30s). Check connectivity or try --no-cache for cached data.` |
+| API error | 3 | `✗ Oracle API error: [status code] [error message from server]` |
+| Validation error | 4 | `✗ Validation error: [field]: [specific rule violation]` |
+| Not found | 5 | `✗ Resource not found: [type] with ID [id]` |
+| Permission denied | 6 | `✗ Permission denied. You don't have access to this timesheet.` |
+
+**All errors** must:
+- Start with `✗` symbol (failure indicator)
+- Include a clear, actionable message
+- Suggest next steps (e.g., "Use 'fusion auth login' to authenticate")
+- Be written to `stderr` (not stdout)
+
+---
+
+## Global Behavior Contract
+
+**Help System**:
+```
+Every command supports --help / -h
+Displays: description, usage pattern, all options with defaults
+Example: fusion timesheet view --help
+```
+
+**Verbose Mode**:
+```
+--verbose flag shows debug logs:
+- HTTP request/response details
+- Cache hit/miss info
+- Timing information
+```
+
+**Config Override**:
+```
+--config <path> overrides ~/.fusion-cli/config.yaml
+Useful for testing with different configurations
+```
+
+**Cache Behavior**:
+```
+By default: Uses cache if available and fresh (TTL: 24 hours)
+--no-cache: Fetches fresh from server, updates cache
+```
+
+---
+
+## Next Phase: Implementation
+
+**Ready for**: Task generation and development
+**Blockers**: None — contract fully specified
