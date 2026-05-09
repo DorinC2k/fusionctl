@@ -90,6 +90,8 @@ def _log_period(
         success(
             f"Wrote {result.written_entries} entries across {result.processed_cards} timecards"
         )
+        if result.submitted_timecards:
+            console.print(f"  Submitted {result.submitted_timecards} timecards")
         if result.skipped_dates:
             console.print(
                 f"  Skipped {result.skipped_dates} dates with Oracle prefilled leave or holidays"

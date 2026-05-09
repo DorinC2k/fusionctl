@@ -48,6 +48,7 @@ class TimecardExecutionResult:
     skipped_dates: int
     processed_cards: int
     skipped_timecards: int = 0
+    submitted_timecards: int = 0
 
 
 async def execute_period_logs(entries: Sequence[PlannedLogEntry]) -> TimecardExecutionResult:
@@ -91,6 +92,7 @@ class TimecardExecutor:
                 skipped_dates=0,
                 processed_cards=0,
                 skipped_timecards=0,
+                submitted_timecards=0,
             )
 
         await self.client.refresh_bearer_token()
@@ -99,6 +101,7 @@ class TimecardExecutor:
         written_entries = 0
         skipped_dates = 0
         skipped_timecards = 0
+        submitted_timecards = 0
         known_time_type_values: dict[TimeType, str] = {}
 
         for week, planned_entries in by_week.items():
@@ -170,12 +173,15 @@ class TimecardExecutor:
                 detail = await self._fetch_detail(str(card["TimeCardId"]))
                 card = _extract_card(detail)
                 filtered_entries = _entries(card)
+            await self._submit(card, filtered_entries)
+            submitted_timecards += 1
 
         return TimecardExecutionResult(
             written_entries=written_entries,
             skipped_dates=skipped_dates,
             processed_cards=len(by_week),
             skipped_timecards=skipped_timecards,
+            submitted_timecards=submitted_timecards,
         )
 
     async def _find_cards(self, start: Date, end: Date) -> list[dict[str, Any]]:
@@ -238,6 +244,19 @@ class TimecardExecutor:
             "timeEntries": [_time_entry_payload(entry) for entry in entries],
         }
         await self.client.save_timecard_entries(self.endpoints.api_root, payload)
+
+    async def _submit(self, card: Mapping[str, Any], entries: list[dict[str, Any]]) -> None:
+        payload: dict[str, Any] = {
+            "TimeCardId": card.get("TimeCardId"),
+            "TimeCardVersion": card.get("TimeCardVersion"),
+            "PersonId": card.get("PersonId") or self.person_id,
+            "StartDate": card.get("StartDate"),
+            "StopDate": card.get("StopDate"),
+            "UserContext": "WORKER",
+            "IgnoreWarningsFlag": False,
+            "timeEntries": [_time_entry_payload(entry) for entry in entries],
+        }
+        await self.client.submit_timecard(self.endpoints.api_root, payload)
 
     async def _lookup_project(self, entry: PlannedLogEntry, week: tuple[Date, Date]) -> str:
         return await self._lookup_code(
@@ -407,20 +426,31 @@ def _build_time_entry(
     time_type_value: str,
     settings: Settings,
 ) -> dict[str, Any]:
-    field_values = [
-        {"TimeCardFieldId": settings.oracle_field_time_type, "Value": time_type_value},
-        {"TimeCardFieldId": settings.oracle_field_location, "Value": entry.location},
-        {"TimeCardFieldId": settings.oracle_field_payroll_time_type, "Value": None},
-        {"TimeCardFieldId": settings.oracle_field_absence, "Value": None},
-        {"TimeCardFieldId": settings.oracle_field_assignment, "Value": settings.oracle_assignment_value},
-        {"TimeCardFieldId": settings.oracle_field_business_unit, "Value": settings.oracle_business_unit_value},
-        {"TimeCardFieldId": settings.oracle_field_entry_source, "Value": settings.oracle_entry_source_value},
-        {"TimeCardFieldId": settings.oracle_field_entry_context, "Value": settings.oracle_entry_context_value},
-    ]
-    if entry.time_type is TimeType.REGULAR:
-        field_values[0:0] = [
+    if entry.time_type is TimeType.PUBLIC_HOLIDAY:
+        field_values = [
+            {"TimeCardFieldId": settings.oracle_field_project, "Value": None},
+            {"TimeCardFieldId": settings.oracle_field_task, "Value": None},
+            {"TimeCardFieldId": settings.oracle_field_time_type, "Value": time_type_value},
+            {"TimeCardFieldId": settings.oracle_field_location, "Value": None},
+            {"TimeCardFieldId": settings.oracle_field_payroll_time_type, "Value": None},
+            {"TimeCardFieldId": settings.oracle_field_absence, "Value": None},
+            {"TimeCardFieldId": settings.oracle_field_assignment, "Value": settings.oracle_assignment_value},
+            {"TimeCardFieldId": settings.oracle_field_business_unit, "Value": None},
+            {"TimeCardFieldId": settings.oracle_field_entry_source, "Value": None},
+            {"TimeCardFieldId": settings.oracle_field_entry_context, "Value": None},
+        ]
+    else:
+        field_values = [
             {"TimeCardFieldId": settings.oracle_field_project, "Value": project_value},
             {"TimeCardFieldId": settings.oracle_field_task, "Value": task_value},
+            {"TimeCardFieldId": settings.oracle_field_time_type, "Value": time_type_value},
+            {"TimeCardFieldId": settings.oracle_field_location, "Value": entry.location},
+            {"TimeCardFieldId": settings.oracle_field_payroll_time_type, "Value": None},
+            {"TimeCardFieldId": settings.oracle_field_absence, "Value": None},
+            {"TimeCardFieldId": settings.oracle_field_assignment, "Value": settings.oracle_assignment_value},
+            {"TimeCardFieldId": settings.oracle_field_business_unit, "Value": settings.oracle_business_unit_value},
+            {"TimeCardFieldId": settings.oracle_field_entry_source, "Value": settings.oracle_entry_source_value},
+            {"TimeCardFieldId": settings.oracle_field_entry_context, "Value": settings.oracle_entry_context_value},
         ]
 
     return {

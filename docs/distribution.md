@@ -89,14 +89,14 @@ sudo apt-get install rpm
 Install the Debian package locally with:
 
 ```bash
-sudo apt install ./dist/fusionctl_1.1.5_amd64.deb
+sudo apt install ./dist/fusionctl_1.1.6_amd64.deb
 fusionctl --version
 ```
 
 Install the RPM package on Fedora/RHEL-compatible systems with:
 
 ```bash
-sudo dnf install ./dist/fusionctl-1.1.5-1.x86_64.rpm
+sudo dnf install ./dist/fusionctl-1.1.6-1.x86_64.rpm
 fusionctl --version
 ```
 
@@ -125,8 +125,8 @@ The publishing flow is:
 The workflow runs automatically for version tags such as:
 
 ```bash
-git tag v1.1.5
-git push origin v1.1.5
+git tag v1.1.6
+git push origin v1.1.6
 ```
 
 It can also be run manually from GitHub Actions with the `Publish APT repository`

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to publish, for example v1.1.5. Defaults to pyproject version."
+        description: "Release tag to publish, for example v1.1.6. Defaults to pyproject version."
         required: false
         type: string
 

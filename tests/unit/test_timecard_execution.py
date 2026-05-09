@@ -1,5 +1,7 @@
 from datetime import date
 from decimal import Decimal
+from typing import Any
+
 import pytest
 
 from fusionctl.api.endpoints import OracleEndpoints
@@ -41,6 +43,10 @@ class RecordingOracleClient(OracleClient):
     async def get(self, url: str, params: dict[str, str] | None = None) -> dict[str, object]:
         _ = (url, params)
         return {"items": []}
+
+    async def submit_timecard(self, api_root: str, payload: dict[str, Any]) -> dict[str, object]:
+        self.posts.append((f"{api_root.rstrip('/')}/timeCards", payload, "submit"))
+        return {"ok": True}
 
 
 def test_prefilled_blocked_dates_keep_leave_and_oracle_holidays_only() -> None:
@@ -127,7 +133,7 @@ def test_build_time_entry_includes_location_and_oracle_field_values() -> None:
     assert values[settings.oracle_field_location] == "Work from office (employment contract)"
 
 
-def test_build_public_holiday_entry_omits_project_and_task_fields() -> None:
+def test_build_public_holiday_entry_uses_oracle_holiday_field_shape() -> None:
     settings = Settings()
     row = _build_time_entry(
         PlannedLogEntry(
@@ -148,9 +154,14 @@ def test_build_public_holiday_entry_omits_project_and_task_fields() -> None:
     )
 
     values = {item["TimeCardFieldId"]: item["Value"] for item in row["timeCardFieldValues"]}
-    assert settings.oracle_field_project not in values
-    assert settings.oracle_field_task not in values
+    assert values[settings.oracle_field_project] is None
+    assert values[settings.oracle_field_task] is None
     assert values[settings.oracle_field_time_type] == "holiday-id"
+    assert values[settings.oracle_field_location] is None
+    assert values[settings.oracle_field_assignment] == settings.oracle_assignment_value
+    assert values[settings.oracle_field_business_unit] is None
+    assert values[settings.oracle_field_entry_source] is None
+    assert values[settings.oracle_field_entry_context] is None
 
 
 def test_time_type_value_map_reads_values_from_existing_entries() -> None:
@@ -255,6 +266,52 @@ def test_is_approved_card_checks_detail_and_summary_status() -> None:
     assert _is_approved_card({"Status": "APPROVED"}, {"StatusCode": "SUBMITTED"})
     assert _is_approved_card({"Status": "SUBMITTED"}, {"StatusCode": "APPROVED"})
     assert not _is_approved_card({"Status": "SUBMITTED"}, {"StatusCode": "SUBMITTED"})
+
+
+@pytest.mark.asyncio
+async def test_submit_uses_latest_card_state_and_sanitized_entries() -> None:
+    client = RecordingOracleClient()
+    executor = TimecardExecutor(
+        client=client,
+        endpoints=OracleEndpoints("https://example.oraclecloud.com", "resource"),
+        settings=Settings(),
+        person_id="100",
+    )
+
+    await executor._submit(
+        {
+            "TimeCardId": "300",
+            "TimeCardVersion": 2,
+            "PersonId": "100",
+            "StartDate": "2026-05-04T00:00:00+00:00",
+            "StopDate": "2026-05-10T23:59:59.999+00:00",
+        },
+        [
+            {
+                "TimeEntryId": "entry",
+                "TimeEntryVersion": 1,
+                "EntryDate": "2026-05-04T00:00:00+00:00",
+                "Measure": "8",
+                "AbsenceEntryFlag": False,
+                "timeCardFieldValues": {
+                    "items": [{"TimeCardFieldId": "field", "Value": "value"}]
+                },
+            }
+        ],
+    )
+
+    _, payload, marker = client.posts[0]
+    assert marker == "submit"
+    assert payload["TimeCardVersion"] == 2
+    assert payload["timeEntries"] == [
+        {
+            "TimeEntryId": "entry",
+            "TimeEntryVersion": 1,
+            "EntryDate": "2026-05-04T00:00:00+00:00",
+            "Measure": "8",
+            "timeCardFieldValues": [{"TimeCardFieldId": "field", "Value": "value"}],
+        }
+    ]
 
 
 @pytest.mark.asyncio

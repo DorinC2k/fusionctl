@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fusionctl"
-version = "1.1.5"
+version = "1.1.6"
 description = "Oracle Fusion Timesheet CLI"
 authors = ["Dorin Cobzac"]
 readme = "README.md"

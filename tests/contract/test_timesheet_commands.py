@@ -98,6 +98,7 @@ def test_log_month_without_dry_run_writes_planned_entries(monkeypatch) -> None:
             skipped_dates=0,
             processed_cards=1,
             skipped_timecards=0,
+            submitted_timecards=1,
         )
 
     monkeypatch.setattr(
@@ -121,6 +122,7 @@ def test_log_month_without_dry_run_writes_planned_entries(monkeypatch) -> None:
     output = normalized_output(result.stdout)
     assert "Ready" in output
     assert "Wrote" in output
+    assert "Submitted 1 timecards" in output
 
 
 def test_log_last_month_requires_project_and_task() -> None:
