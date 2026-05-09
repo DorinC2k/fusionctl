@@ -14,6 +14,7 @@ DEFAULT_ORACLE_TIMECARDS_URL = (
 )
 COOKIE_DOMAINS = ("oraclecloud.com", "oracle.endava.com")
 STAY_SIGNED_IN_BUTTONS = ("Yes", "Da")
+SESSION_COOKIE_NAMES = ("JSESSIONID", "OAMAuthnCookie", "ORA_FUSION_PREFS")
 
 
 class BrowserAuthService:
@@ -85,7 +86,7 @@ class BrowserAuthService:
         while asyncio.get_running_loop().time() < deadline:
             await self._accept_stay_signed_in_prompt(page)
             if "oraclecloud.com" in page.url:
-                if await self._tokenrelay_is_available(page):
+                if await self._tokenrelay_is_available(page) or await self._session_cookie_is_available(page):
                     return
             try:
                 await page.wait_for_timeout(1000)
@@ -136,9 +137,25 @@ class BrowserAuthService:
         except Exception:
             return False
 
+    async def _session_cookie_is_available(self, page: Any) -> bool:
+        try:
+            cookies = await page.context.cookies()
+        except Exception:
+            return False
+        return has_oracle_session_cookie(cookies)
+
 
 def _is_target_closed_error(exc: Exception) -> bool:
     return "Target page, context or browser has been closed" in str(exc)
+
+
+def has_oracle_session_cookie(cookies: Sequence[Mapping[str, Any]]) -> bool:
+    return any(
+        any(domain in str(cookie.get("domain", "")) for domain in COOKIE_DOMAINS)
+        and str(cookie.get("name", "")).startswith(SESSION_COOKIE_NAMES)
+        and bool(cookie.get("value"))
+        for cookie in cookies
+    )
 
 
 def cookie_header_from_playwright(cookies: Sequence[Mapping[str, Any]]) -> str:
