@@ -101,4 +101,4 @@ poetry run poe bundle
 
 The executable is written to `dist/`. Build Linux and Windows artifacts on their matching OS runners. See [Standalone Distribution](docs/distribution.md).
 
-GitHub Actions builds both Linux and Windows standalone archives on every pull request and push to `main`.
+GitHub Actions builds Linux and Windows standalone archives on every pull request and push to `main`. Release tags can also publish a GitHub Pages-backed APT repository for Ubuntu/Debian installs.

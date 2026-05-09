@@ -102,27 +102,80 @@ fusionctl --version
 
 ## GitHub-Hosted APT Repository
 
-Yes, this project can also host an APT repository in GitHub. The usual pattern is:
+Yes, this project can also host an APT repository in GitHub. The workflow at
+`.github/workflows/publish-apt-repo.yml` publishes a static APT repository to
+GitHub Pages.
+
+The standalone Linux bundle is large because it includes the Playwright browser
+runtime. GitHub Pages should not be used to store that large archive directly.
+Instead, the APT repository contains a small `fusionctl` bootstrap package. With
+the recommended signing secrets configured, that package is delivered from a
+signed APT repository. During install, it downloads
+`fusionctl-linux-x64.tar.gz` from GitHub Releases during install, verifies its
+SHA256 checksum, and extracts it to `/opt/fusionctl`.
+
+The publishing flow is:
 
 1. Keep source code and build workflows on `main`.
-2. Publish generated APT repository files to a `gh-pages` branch.
-3. Enable GitHub Pages for that branch.
-4. Serve signed repository metadata and `.deb` files from the Pages URL.
+2. Build the Linux standalone archive.
+3. Upload `fusionctl-linux-x64.tar.gz` and its `.sha256` file to a GitHub Release.
+4. Build the APT repository under `public/apt`.
+5. Publish the static repository with GitHub Pages.
 
-Users would then install from GitHub Pages with commands like:
+The workflow runs automatically for version tags such as:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+It can also be run manually from GitHub Actions with the `Publish APT repository`
+workflow.
+
+Enable GitHub Pages for the repository and set the source to GitHub Actions.
+
+### Signed APT Repo
+
+Recommended: add these GitHub Actions secrets before publishing:
+
+- `APT_GPG_PRIVATE_KEY`: armored private GPG key used to sign the APT repository
+- `APT_GPG_PASSPHRASE`: passphrase for that private key, if it has one
+
+With signing enabled, users install from GitHub Pages with:
 
 ```bash
 curl -fsSL https://dorinc2k.github.io/fusionctl/apt/fusionctl.gpg \
   | sudo gpg --dearmor -o /usr/share/keyrings/fusionctl.gpg
 
-echo "deb [signed-by=/usr/share/keyrings/fusionctl.gpg] https://dorinc2k.github.io/fusionctl/apt stable main" \
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/fusionctl.gpg] https://dorinc2k.github.io/fusionctl/apt stable main" \
   | sudo tee /etc/apt/sources.list.d/fusionctl.list
 
 sudo apt update
 sudo apt install fusionctl
 ```
 
-Do not commit generated repository metadata or package files to `main`; publish them from release automation to `gh-pages` or a separate package repository branch.
+### Unsigned Test Repo
+
+If the signing secrets are not configured, the workflow still publishes an
+unsigned repository for testing. Users must explicitly mark it trusted:
+
+```bash
+echo "deb [arch=amd64 trusted=yes] https://dorinc2k.github.io/fusionctl/apt stable main" \
+  | sudo tee /etc/apt/sources.list.d/fusionctl.list
+
+sudo apt update
+sudo apt install fusionctl
+```
+
+Then normal upgrades work through APT:
+
+```bash
+sudo apt update
+sudo apt upgrade fusionctl
+```
+
+Do not commit generated repository metadata or package files to `main`; publish
+them from release automation.
 
 ## User Install
 

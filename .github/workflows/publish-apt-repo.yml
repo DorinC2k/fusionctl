@@ -1,0 +1,154 @@
+name: Publish APT repository
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish, for example v0.1.0. Defaults to pyproject version."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and publish APT repo
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      APT_GPG_PRIVATE_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
+      APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install system package tooling
+        run: sudo apt-get update && sudo apt-get install -y apt-utils dpkg-dev
+
+      - name: Install Poetry
+        run: python -m pip install poetry==2.2.1
+
+      - name: Install dependencies
+        run: poetry install --with dev
+
+      - name: Resolve release metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(python - <<'PY'
+          import tomllib
+          print(tomllib.load(open("pyproject.toml", "rb"))["tool"]["poetry"]["version"])
+          PY
+          )"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            tag="${GITHUB_REF_NAME}"
+          elif [ -n "${{ inputs.tag }}" ]; then
+            tag="${{ inputs.tag }}"
+          else
+            tag="v${version}"
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Run tests
+        run: poetry run poe test
+
+      - name: Run lint
+        run: poetry run poe lint
+
+      - name: Run typecheck
+        run: poetry run poe typecheck
+
+      - name: Build standalone Linux archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          poetry run python scripts/build_standalone.py --onedir --name fusionctl
+          tar -czf fusionctl-linux-x64.tar.gz -C dist fusionctl
+          sha256sum fusionctl-linux-x64.tar.gz | tee fusionctl-linux-x64.tar.gz.sha256
+
+      - name: Publish GitHub release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.meta.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --title "$RELEASE_TAG" --notes "fusionctl $RELEASE_TAG"
+          fi
+          gh release upload "$RELEASE_TAG" fusionctl-linux-x64.tar.gz fusionctl-linux-x64.tar.gz.sha256 --clobber
+
+      - name: Build APT repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive_sha="$(cut -d' ' -f1 fusionctl-linux-x64.tar.gz.sha256)"
+          archive_url="https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.tag }}/fusionctl-linux-x64.tar.gz"
+          poetry run poe apt-repo --version "${{ steps.meta.outputs.version }}" --release-url "$archive_url" --sha256 "$archive_sha" --output public/apt
+
+      - name: Import APT signing key
+        if: ${{ env.APT_GPG_PRIVATE_KEY != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.gnupg
+          printf '%s' "$APT_GPG_PRIVATE_KEY" | gpg --batch --import
+
+      - name: Sign APT repository
+        if: ${{ env.APT_GPG_PRIVATE_KEY != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd public/apt/dists/stable
+          if [ -n "${APT_GPG_PASSPHRASE}" ]; then
+            gpg --batch --yes --pinentry-mode loopback --passphrase "$APT_GPG_PASSPHRASE" --clearsign -o InRelease Release
+            gpg --batch --yes --pinentry-mode loopback --passphrase "$APT_GPG_PASSPHRASE" -abs -o Release.gpg Release
+          else
+            gpg --batch --yes --clearsign -o InRelease Release
+            gpg --batch --yes -abs -o Release.gpg Release
+          fi
+          gpg --armor --export > ../../fusionctl.gpg
+
+      - name: Add Pages index
+        run: |
+          cat > public/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <meta charset="utf-8">
+          <title>fusionctl package repository</title>
+          <h1>fusionctl package repository</h1>
+          <p>APT repository path: <code>/apt</code></p>
+          HTML
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

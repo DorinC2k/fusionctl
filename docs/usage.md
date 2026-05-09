@@ -153,3 +153,11 @@ poetry run poe bundle-onedir
 ```
 
 Linux and Windows binaries must be built on matching OS runners. The GitHub Actions workflow in `.github/workflows/build-binaries.yml` builds both standalone archives.
+
+Linux package artifacts are built with:
+
+```bash
+poetry run poe package-linux
+```
+
+The APT repository publisher is in `.github/workflows/publish-apt-repo.yml` and is intended for version tags such as `v0.1.0`.

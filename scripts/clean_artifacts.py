@@ -10,6 +10,7 @@ PATHS_TO_REMOVE = [
     ROOT / "dist",
     ROOT / "build" / "pyinstaller",
     ROOT / "build" / "packages",
+    ROOT / "build" / "apt",
     ROOT / ".pytest_cache",
     ROOT / ".mypy_cache",
     ROOT / ".ruff_cache",
