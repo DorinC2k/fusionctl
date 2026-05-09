@@ -382,6 +382,12 @@ Verified examples:
 
 When logging regular work, the CLI must treat dates with an existing absence row as already occupied and skip creating regular entries for those dates. In full-card save payloads, preserve absence rows exactly as returned by Oracle, including `TimeEntryId`, `TimeEntryVersion`, `AbsenceEntryFlag`, `EntryType`, and the `timeCardFieldValues` array.
 
+#### Idempotent Logging
+
+Before adding planned rows to the full-card save payload, compare each planned allocation against the latest `timeEntries` from Oracle. If an existing row has the same date, time type, and hours, do not add another row. This prevents repeated CLI runs from stacking duplicate hours for the same day.
+
+For public-holiday split days, idempotency is checked per row. If `7 Regular` already exists but `1 Public Holiday` is missing, create only the missing `1 Public Holiday` row. If both rows already exist, submit no new allocations.
+
 ```json
 {
   "TimeCardId": "300005124780107",

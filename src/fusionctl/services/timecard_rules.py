@@ -29,27 +29,35 @@ def allocate_regular_day(
         raise ValueError("Hours must be greater than zero")
     if _has_prefilled_non_working_entry(existing_entries, entry_date):
         return []
+
+    allocations: list[TimeAllocation]
     if not _is_working_day(entry_date):
-        return [TimeAllocation(date=entry_date, hours=hours, time_type=TimeType.REGULAR)]
+        allocations = [TimeAllocation(date=entry_date, hours=hours, time_type=TimeType.REGULAR)]
+    else:
+        next_day = entry_date + timedelta(days=1)
+        if _has_public_holiday(existing_entries, next_day):
+            if hours <= PUBLIC_HOLIDAY_CARRYOVER_HOURS:
+                raise ValueError("Hours must be greater than 1 before a public holiday")
+            allocations = [
+                TimeAllocation(
+                    date=entry_date,
+                    hours=hours - PUBLIC_HOLIDAY_CARRYOVER_HOURS,
+                    time_type=TimeType.REGULAR,
+                ),
+                TimeAllocation(
+                    date=entry_date,
+                    hours=PUBLIC_HOLIDAY_CARRYOVER_HOURS,
+                    time_type=TimeType.PUBLIC_HOLIDAY,
+                ),
+            ]
+        else:
+            allocations = [TimeAllocation(date=entry_date, hours=hours, time_type=TimeType.REGULAR)]
 
-    next_day = entry_date + timedelta(days=1)
-    if _has_public_holiday(existing_entries, next_day):
-        if hours <= PUBLIC_HOLIDAY_CARRYOVER_HOURS:
-            raise ValueError("Hours must be greater than 1 before a public holiday")
-        return [
-            TimeAllocation(
-                date=entry_date,
-                hours=hours - PUBLIC_HOLIDAY_CARRYOVER_HOURS,
-                time_type=TimeType.REGULAR,
-            ),
-            TimeAllocation(
-                date=entry_date,
-                hours=PUBLIC_HOLIDAY_CARRYOVER_HOURS,
-                time_type=TimeType.PUBLIC_HOLIDAY,
-            ),
-        ]
-
-    return [TimeAllocation(date=entry_date, hours=hours, time_type=TimeType.REGULAR)]
+    return [
+        allocation
+        for allocation in allocations
+        if not _has_matching_entry(existing_entries, allocation)
+    ]
 
 
 def _has_public_holiday(entries: list[TimeEntry], target_date: Date) -> bool:
@@ -63,6 +71,15 @@ def _has_prefilled_non_working_entry(entries: list[TimeEntry], target_date: Date
     return any(
         entry.date == target_date
         and (entry.time_type == TimeType.PUBLIC_HOLIDAY or entry.is_prefilled_absence)
+        for entry in entries
+    )
+
+
+def _has_matching_entry(entries: list[TimeEntry], allocation: TimeAllocation) -> bool:
+    return any(
+        entry.date == allocation.date
+        and entry.time_type == allocation.time_type
+        and Decimal(str(entry.hours)) == allocation.hours
         for entry in entries
     )
 

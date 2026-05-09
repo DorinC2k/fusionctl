@@ -384,6 +384,8 @@ $ fusion timesheet log --date 2026-05-07 --hours 8 --project WORDV266 --task 02
 
 The pre-added public holiday day itself is preserved and not overwritten.
 
+If the same split rows already exist, the command is idempotent and creates no duplicate hours.
+
 **Prefilled Absence Rule**:
 
 If Oracle has pre-filled a date with an absence entry such as `Annual Leave MD`, the CLI preserves that entry and does not create a regular work entry for the same date.
@@ -392,6 +394,16 @@ If Oracle has pre-filled a date with an absence entry such as `Annual Leave MD`,
 $ fusion timesheet log --date 2026-02-23 --hours 8 --project WORDV266 --task 02
 ✓ Time entry skipped
   2026-02-23  8.0h  Annual Leave MD
+```
+
+**Idempotent Re-run**:
+
+Repeating the same log command for an already-logged day skips matching existing date/time-type/hour rows:
+
+```
+$ fusion timesheet log --date 2026-05-06 --hours 8 --project WORDV266 --task 02
+✓ Time entry skipped
+  2026-05-06  8.0h  Regular already exists
 ```
 
 ---

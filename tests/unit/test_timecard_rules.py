@@ -35,6 +35,26 @@ def annual_leave(day: date) -> TimeEntry:
     )
 
 
+def regular_entry(day: date, hours: str = "8") -> TimeEntry:
+    return TimeEntry(
+        date=day,
+        hours=Decimal(hours),
+        time_type=TimeType.REGULAR,
+        project=project(),
+        task=task(),
+    )
+
+
+def public_holiday_carryover(day: date) -> TimeEntry:
+    return TimeEntry(
+        date=day,
+        hours=Decimal("1"),
+        time_type=TimeType.PUBLIC_HOLIDAY,
+        project=project(),
+        task=task(),
+    )
+
+
 def test_working_day_before_public_holiday_splits_one_hour_to_public_holiday() -> None:
     allocations = allocate_regular_day(
         date(2026, 5, 7),
@@ -53,6 +73,45 @@ def test_regular_day_without_next_day_public_holiday_stays_regular() -> None:
 
     assert [(item.hours, item.time_type) for item in allocations] == [
         (Decimal("8"), TimeType.REGULAR)
+    ]
+
+
+def test_existing_regular_day_is_idempotent() -> None:
+    allocations = allocate_regular_day(
+        date(2026, 5, 6),
+        Decimal("8"),
+        [regular_entry(date(2026, 5, 6))],
+    )
+
+    assert allocations == []
+
+
+def test_existing_public_holiday_split_is_idempotent() -> None:
+    allocations = allocate_regular_day(
+        date(2026, 5, 7),
+        Decimal("8"),
+        [
+            public_holiday(date(2026, 5, 8)),
+            regular_entry(date(2026, 5, 7), "7"),
+            public_holiday_carryover(date(2026, 5, 7)),
+        ],
+    )
+
+    assert allocations == []
+
+
+def test_partial_public_holiday_split_only_plans_missing_row() -> None:
+    allocations = allocate_regular_day(
+        date(2026, 5, 7),
+        Decimal("8"),
+        [
+            public_holiday(date(2026, 5, 8)),
+            regular_entry(date(2026, 5, 7), "7"),
+        ],
+    )
+
+    assert [(item.hours, item.time_type) for item in allocations] == [
+        (Decimal("1"), TimeType.PUBLIC_HOLIDAY)
     ]
 
 
