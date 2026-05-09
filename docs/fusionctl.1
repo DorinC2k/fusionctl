@@ -1,0 +1,132 @@
+.TH FUSIONCTL 1 "May 2026" "fusionctl 0.1.0" "User Commands"
+.SH NAME
+fusionctl \- manage Oracle Fusion timecards from a local CLI
+.SH SYNOPSIS
+.nf
+fusionctl [OPTIONS] COMMAND [ARGS]
+fusionctl auth login|status|logout
+fusionctl timesheet log-week|log-month|log-last-month [OPTIONS]
+.fi
+.SH DESCRIPTION
+.B fusionctl
+is a local command line tool for Oracle Fusion timecards. It stores session state locally, uses browser-backed Oracle/Azure authentication, and provides convenience commands for planning regular work entries.
+.PP
+The standalone executable includes Python and project dependencies. Users do not need to install Python.
+.SH GLOBAL OPTIONS
+.TP
+.BR --version ", " -v
+Print the fusionctl version and exit.
+.TP
+.BR -vv ", " --verbose
+Enable diagnostic logging.
+.TP
+.BR -vvv ", " --very-verbose
+Enable maximum diagnostic logging.
+.TP
+.BI --config " PATH"
+Use an alternate configuration path.
+.TP
+.B --no-cache
+Ignore cached data and fetch fresh data where supported.
+.TP
+.BR -h ", " --help
+Show help.
+.SH AUTH COMMANDS
+.TP
+.B fusionctl auth login --browser
+Open a browser, complete Oracle/Azure sign-in, and store a local session.
+.TP
+.B fusionctl auth login --browser --headless
+Reuse the persistent browser profile without showing the browser. This avoids repeated 2FA only while Oracle/Azure keep the SSO session valid.
+.TP
+.B fusionctl auth login --token
+Prompt for a manually copied Oracle Cookie header and store it locally.
+.TP
+.B fusionctl auth status
+Show whether a local session is present and still valid.
+.TP
+.B fusionctl auth logout
+Remove the stored local session.
+.SH TIMESHEET COMMANDS
+.TP
+.B fusionctl timesheet log-week --project CODE --task CODE [--hours HOURS] [--notes TEXT] [--dry-run]
+Plan one regular work entry for each weekday in the current week, Monday through today.
+.TP
+.B fusionctl timesheet log-month --project CODE --task CODE [--hours HOURS] [--notes TEXT] [--dry-run]
+Plan one regular work entry for each weekday in the current month, from the first of the month through today.
+.TP
+.B fusionctl timesheet log-last-month --project CODE --task CODE [--hours HOURS] [--notes TEXT] [--dry-run]
+Plan one regular work entry for each weekday in the previous calendar month.
+.PP
+The period logging commands skip weekends. They currently dry-run by default. The
+.B --execute
+switch is reserved for the Oracle batch-write path and fails clearly until that path is wired into the CLI command.
+.SH COMMON EXAMPLES
+.TP
+Authenticate with visible browser:
+.EX
+fusionctl auth login --browser
+.EE
+.TP
+Check authentication:
+.EX
+fusionctl auth status
+.EE
+.TP
+Preview this week:
+.EX
+fusionctl timesheet log-week --project WORDV266 --task 02 --dry-run
+.EE
+.TP
+Preview the current month:
+.EX
+fusionctl timesheet log-month --project WORDV266 --task 02 --dry-run
+.EE
+.TP
+Preview last month:
+.EX
+fusionctl timesheet log-last-month --project WORDV266 --task 02 --dry-run
+.EE
+.TP
+Use different daily hours:
+.EX
+fusionctl timesheet log-week --hours 7.5 --project WORDV266 --task 02 --dry-run
+.EE
+.TP
+Show maximum diagnostic logging:
+.EX
+fusionctl -vvv auth status
+.EE
+.SH FILES
+.TP
+.I ~/.fusion-cli/browser-profile
+Persistent browser profile used for Oracle/Azure SSO reuse.
+.TP
+.I ~/.fusion-cli/session.json
+Fallback local session file when OS keyring storage is unavailable.
+.TP
+.I ~/.fusion-cli/cache
+Local cache directory for read workflows.
+.SH ENVIRONMENT
+.TP
+.B FUSION_ORACLE_BASE_URL
+Override the Oracle base URL. Defaults to https://eclf.fa.em2.oraclecloud.com.
+.TP
+.B FUSION_ORACLE_TIMEOUT
+HTTP timeout in seconds.
+.TP
+.B FUSION_APP_DIR
+Override the local application state directory.
+.SH EXIT STATUS
+.TP
+.B 0
+Command succeeded.
+.TP
+.B 1
+Authentication, storage, or command failure.
+.TP
+.B 2
+Session expired or validation failure, depending on the command.
+.SH SEE ALSO
+.BR docs/usage.md ,
+.BR docs/distribution.md

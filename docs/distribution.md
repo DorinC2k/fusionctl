@@ -32,6 +32,24 @@ For a directory-style build that is easier to inspect:
 poetry run poe bundle-onedir
 ```
 
+## GitHub Actions
+
+The workflow at `.github/workflows/build-binaries.yml` builds standalone archives for:
+
+- `fusionctl-linux-x64` on `ubuntu-latest`
+- `fusionctl-windows-x64` on `windows-latest`
+
+Each job installs dependencies, runs tests, lint, and typecheck, builds with:
+
+```bash
+poetry run python scripts/build_standalone.py --onedir --name fusionctl
+```
+
+Then it smoke-tests `fusionctl --version` and uploads an archive:
+
+- Linux: `fusionctl-linux-x64.tar.gz`
+- Windows: `fusionctl-windows-x64.zip`
+
 ## User Install
 
 Users only need the built artifact:
