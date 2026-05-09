@@ -451,7 +451,7 @@ fusion timesheet list --no-refresh
 
 ### Issue: "Not authenticated" error
 
-**Problem**: `✗ Not authenticated. Use 'fusion auth login' to begin.`
+**Problem**: `✗ Not authenticated. Use 'fusionctl auth login --browser' to begin.`
 
 **Solution**:
 
@@ -631,7 +631,7 @@ This will help us implement the Oracle API client accurately.
 
 ## Project Status
 
-- **Version**: 1.1.2 (Alpha)
+- **Version**: 1.1.3 (Alpha)
 - **Status**: In development
 - **Last Updated**: 2026-05-08
 - **Maintainer**: Your Name

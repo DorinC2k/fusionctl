@@ -54,7 +54,7 @@ fusion/                        # Main group (app.callback)
 ```
 CLI Name: fusion
 Description: Oracle Fusion Timesheet CLI - Manage timesheets locally without web UI
-Version: 1.1.2
+Version: 1.1.3
 Usage: fusion [OPTIONS] COMMAND [ARGS]...
 ```
 
@@ -174,7 +174,7 @@ fusion auth logout [OPTIONS]
 **Output on Success**:
 ```
 ✓ Session cleared
-  You are now logged out. Use 'fusion auth login' to authenticate again.
+  You are now logged out. Use 'fusionctl auth login --browser' to authenticate again.
 ```
 
 ---
@@ -211,7 +211,7 @@ fusion auth status [OPTIONS]
 **Output if Not Authenticated**:
 ```
 ✗ Status: Not authenticated
-  Use 'fusion auth login' to authenticate
+  Use 'fusionctl auth login --browser' to authenticate
 ```
 
 ---
@@ -820,7 +820,7 @@ date,project_code,project_name,task_code,task_name,hours,notes,status
 
 | Error | Exit Code | Message Pattern |
 |-------|-----------|-----------------|
-| Not authenticated | 1 | `✗ Not authenticated. Use 'fusion auth login' to begin.` |
+| Not authenticated | 1 | `✗ Not authenticated. Use 'fusionctl auth login --browser' to begin.` |
 | Network timeout | 2 | `✗ Network timeout (30s). Check connectivity or try --no-cache for cached data.` |
 | API error | 3 | `✗ Oracle API error: [status code] [error message from server]` |
 | Validation error | 4 | `✗ Validation error: [field]: [specific rule violation]` |
@@ -830,7 +830,7 @@ date,project_code,project_name,task_code,task_name,hours,notes,status
 **All errors** must:
 - Start with `✗` symbol (failure indicator)
 - Include a clear, actionable message
-- Suggest next steps (e.g., "Use 'fusion auth login' to authenticate")
+- Suggest next steps (e.g., "Use 'fusionctl auth login --browser' to authenticate")
 - Be written to `stderr` (not stdout)
 
 ---

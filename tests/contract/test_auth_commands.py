@@ -64,3 +64,4 @@ def test_status_without_session(monkeypatch, tmp_path) -> None:
 
     assert result.exit_code == 1
     assert "Not authenticated" in result.stderr
+    assert "fusionctl auth login --browser" in result.stderr
