@@ -18,6 +18,9 @@ fusion/                        # Main group (app.callback)
 │   ├── list                   # List available timesheets
 │   ├── view                   # View specific timesheet details
 │   ├── log                    # Log hours to a timesheet
+│   ├── log-week               # Log working days in the current week
+│   ├── log-month              # Log working days in the current month
+│   ├── log-last-month         # Log working days in the previous calendar month
 │   ├── update                 # Update a time entry
 │   ├── clear                  # Clear editable user-entered rows
 │   ├── delete                 # Delete an editable timecard
@@ -407,6 +410,68 @@ $ fusion timesheet log --date 2026-05-06 --hours 8 --project WORDV266 --task 02
 ✓ Time entry skipped
   2026-05-06  8.0h  Regular already exists
 ```
+
+---
+
+### COMMAND: `fusion timesheet log-week`
+
+**Purpose**: Convenience command to log the same regular work allocation for each working day in the current week, capped at today
+
+**Signature**:
+```
+fusion timesheet log-week [OPTIONS]
+```
+
+**Options**:
+```
+--hours <hours>                # Hours per working day (default: 8)
+--project <code>               # Project code (required)
+--task <code>                  # Task code (required)
+--notes <notes>                # Entry notes applied to each day (optional)
+--dry-run / --execute          # Preview or write entries (default: dry-run while batch write is being wired)
+--help, -h                     # Show help
+```
+
+**Behavior**:
+- Expands Monday through today for the current week.
+- Excludes weekends.
+- Uses the same public-holiday, absence, and idempotency rules as `fusion timesheet log` when execution is wired.
+
+---
+
+### COMMAND: `fusion timesheet log-month`
+
+**Purpose**: Convenience command to log the same regular work allocation for each working day in the current month, capped at today
+
+**Signature**:
+```
+fusion timesheet log-month [OPTIONS]
+```
+
+**Options**: same as `fusion timesheet log-week`.
+
+**Behavior**:
+- Expands the first day of the current month through today.
+- Excludes weekends.
+- Uses the same public-holiday, absence, and idempotency rules as `fusion timesheet log` when execution is wired.
+
+---
+
+### COMMAND: `fusion timesheet log-last-month`
+
+**Purpose**: Convenience command to log the same regular work allocation for each working day in the previous calendar month
+
+**Signature**:
+```
+fusion timesheet log-last-month [OPTIONS]
+```
+
+**Options**: same as `fusion timesheet log-week`.
+
+**Behavior**:
+- Expands the full previous calendar month.
+- Excludes weekends.
+- Uses the same public-holiday, absence, and idempotency rules as `fusion timesheet log` when execution is wired.
 
 ---
 

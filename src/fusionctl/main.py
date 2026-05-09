@@ -1,7 +1,7 @@
 import typer
 
 from fusionctl import __version__
-from fusionctl.cli.commands import auth
+from fusionctl.cli.commands import auth, timesheet
 from fusionctl.cli.runtime import configure_runtime
 
 CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
@@ -50,3 +50,4 @@ def main(
 
 
 app.add_typer(auth.app, name="auth")
+app.add_typer(timesheet.app, name="timesheet")
