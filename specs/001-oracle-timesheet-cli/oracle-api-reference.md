@@ -82,6 +82,12 @@ https://eclf.fa.em2.oraclecloud.com/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3
 - Capture from response headers or metadata endpoints
 - Cache for session duration (10-30 minutes)
 
+**OpenAPI Snapshot**:
+- Local reference: [contracts/oracle-openapi-timecards.json](contracts/oracle-openapi-timecards.json)
+- Source URL: `/describe.openapi?metadataMode=minimal&resources=timeCards,timeChangeAudits,timeCardAttestations`
+- Captured against resource version `rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e` and API version `11.13.18.05:9`
+- Contains 44 paths, including `timeCards`, `timeChangeAudits`, `timeCardAttestations`, and action endpoints such as `/timeCards/action/deleteAction`.
+
 ---
 
 ## API Endpoints
@@ -416,7 +422,7 @@ Verified request shape:
 
 Live verification on `2026-05-09` used editable future card `300005124780913`: adding one regular row changed the card to one positive row, and clearing with an empty preserved set saved successfully, leaving zero positive rows.
 
-#### Delete Timecard (Not Available Through Parent Resource)
+#### Delete Timecard (Parent Resource Not Available)
 
 The expected parent-resource endpoint was tested against editable future card `300005124780913`:
 
@@ -424,7 +430,7 @@ The expected parent-resource endpoint was tested against editable future card `3
 DELETE /timeCards/{TIMECARD_ID}
 ```
 
-Oracle returned `404`, even though the authenticated user has the time-card delete duty. Until browser traffic or Oracle metadata reveals the Redwood delete action, treat full timecard deletion as unavailable in the CLI and use the verified clear workflow to remove user-entered rows from editable cards.
+Oracle returned `404`, even though the authenticated user has the time-card delete duty. The OpenAPI snapshot exposes a separate `POST /timeCards/action/deleteAction` endpoint with action media type and a `timeCards` array payload, but that action endpoint still needs live verification before the CLI should rely on it. Until then, use the verified clear workflow to remove user-entered rows from editable cards.
 
 ```json
 {

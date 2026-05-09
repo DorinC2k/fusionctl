@@ -1,0 +1,4227 @@
+{
+  "components": {
+    "headers": {
+      "Metadata-Context": {
+        "description": "If the REST API supports runtime customizations, the shape of the service may change during runtime. The REST client may isolate itself from these changes or choose to interact with the latest version of the API by specifying this header. For example: Metadata-Context:sandbox=\"TrackEmployeeFeature\".",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "REST-Framework-Version": {
+        "description": "The protocol version between a REST client and service. If the client does not specify this header in the request the server will pick a default version for the API.",
+        "schema": {
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "type": "string"
+        }
+      }
+    },
+    "parameters": {
+      "Effective-Of": {
+        "description": "This header accepts a string value. The string is a semi-colon separated list of <parameter-name>=<parameter-value>. It is used to perform effective date range operations. The accepted parameters are RangeMode, RangeSpan, RangeStartDate, RangeEndDate, RangeStartSequence and RangeEndSequence. The parameter values are always strings. The possible values for RangeMode are SET_LOGICAL_START, SET_LOGICAL_END, END_DATE, SET_EFFECTIVE_START, SET_EFFECTIVE_END, REPLACE_CORRECTION, REPLACE_UPDATE, RECONCILE_CORRECTION, CORRECTION, RECONCILE_UPDATE, UPDATE, ZAP and DELETE_CHANGES. The possible values for RangeSpan are PHYSICAL_ROW_END_DATE and LOGICAL_ROW_END_DATE. The values for RangeStartDate and RangeEndDate have to be a string representation of a date in yyyy-MM-dd format. The value for RangeStartSequence and RangeEndSequence must be strings such that when parsed they yield positive integers.",
+        "in": "header",
+        "name": "Effective-Of",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "Metadata-Context": {
+        "description": "If the REST API supports runtime customizations, the shape of the service may change during runtime. The REST client may isolate itself from these changes or choose to interact with the latest version of the API by specifying this header. For example: Metadata-Context:sandbox=\"TrackEmployeeFeature\".",
+        "in": "header",
+        "name": "Metadata-Context",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "REST-Framework-Version": {
+        "description": "The protocol version between a REST client and service. If the client does not specify this header in the request the server will pick a default version for the API.",
+        "in": "header",
+        "name": "REST-Framework-Version",
+        "schema": {
+          "enum": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+          ],
+          "type": "string"
+        }
+      },
+      "Upsert-Mode": {
+        "description": "When set to true, the server will perform an Upsert operation instead of a Create. In an Upsert operation the server attempts to find an existing resource that matches the payload. If found, the server updates the existing resource instead of creating a new one. If not found, or when set to false (the default), a Create is performed.",
+        "in": "header",
+        "name": "Upsert-Mode",
+        "schema": {
+          "enum": [
+            "true",
+            "false"
+          ],
+          "type": "string"
+        }
+      },
+      "dependency": {
+        "description": "This parameter specifies dependencies which are fields that are set before and rolled back after generating the response. Generally they are used to preview the effects of an attribute change. The fields specified in this parameter are always set in the resource instance in question. When a child resource collection is requested and the parameter is set, the fields will be set in the parent resource instance before generating the resource collection payload. The value of this query parameter is a set of dependency fields.  Example: dependency=ProductId=2<br><br>Format: &lt;attr1&gt;=&lt;val1&gt;,&lt;attr2&gt;=&lt;value2&gt;",
+        "in": "query",
+        "name": "dependency",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "effectiveDate": {
+        "description": "This query parameter is used to fetch resources which are effective dated as of the specified start date. The value of this query parameter is a string having a date in yyyy-MM-dd format",
+        "in": "query",
+        "name": "effectiveDate",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "expand": {
+        "description": "When this parameter is provided, the specified children are included in the resource payload (instead of just a link). The value of this query parameter is \"all\" or \"\". More than one child can be specified using comma as a separator. Example: ?expand=Employees,Localizations. Nested children can also be provided following the format \"Child.NestedChild\" (Example: ?expand=Employees.Managers). If a nested child is provided (Example: Employees.Managers), the missing children will be processed implicitly. For example, \"?expand=Employees.Managers\" is the same as \"?expand=Employees,Employees.Managers\" (which will expand Employees and Managers).",
+        "in": "query",
+        "name": "expand",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "fields": {
+        "description": "This parameter filters the resource fields. Only the specified fields are returned, which means that if no fields are specified, no fields are returned (useful to get only the links). If an indirect child resource is provided (Example: Employees.Managers), the missing children will be processed implicitly. For example, \"?fields=Employees.Managers:Empname\" is the same as \"?fields=;Employees:;Employees.Managers:Empname\" (which will only return the \"Empname\" field for Managers). the value of this query parameter is a list of resource fields. The attribute can be a direct (Example: Employees) or indirect (Example: Employees.Managers) child. It cannot be combined with expand query parameter. If both are provided, only fields will be considered.<br><br>Format: ?fields=Attribute1,Attribute2<br><br>Format for fields in child resource: ?fields=Accessor1:Attribute1,Attribute2",
+        "in": "query",
+        "name": "fields",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "limit": {
+        "description": "This parameter restricts the number of resources returned inside the resource collection. If the limit exceeds the resource count then the framework will only return the available resources.",
+        "in": "query",
+        "name": "limit",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "links": {
+        "description": "This parameter can be used to show only certain links while accessing a singular resource or a resource collection. The parameter value format is a comma-separated list of : &lt;link_relation&gt;<br><br>Example:<br>self,canonical<br>",
+        "in": "query",
+        "name": "links",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "offset": {
+        "description": "Used to define the starting position of the resource collection. If offset exceeds the resource count then no resources are returned. Default value is 0.",
+        "in": "query",
+        "name": "offset",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "onlyData": {
+        "description": "The resource item payload will be filtered in order to contain only data (no links section, for example).",
+        "in": "query",
+        "name": "onlyData",
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      "orderBy": {
+        "description": "This parameter orders a resource collection based on the specified fields.  The parameter value is a comma-separated string of attribute names, each optionally followed by a colon and \"asc\" or \"desc\".  Specify \"asc\" for ascending and \"desc\" for descending. The default value is \"asc\".  For example, ?orderBy=field1:asc,field2:desc",
+        "in": "query",
+        "name": "orderBy",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "q": {
+        "description": "This query parameter defines the where clause. The resource collection will be queried using the provided expressions. The value of this query parameter is one or more expressions. Example: ?q=Deptno&gt;=10 and &lt;= 30;Loc!=NY <br><br>Format: ?q=expression1;expression2",
+        "in": "query",
+        "name": "q",
+        "schema": {
+          "type": "string"
+        }
+      },
+      "totalResults": {
+        "description": "The resource collection representation will include the \"estimated row count\" when \"?totalResults=true\", otherwise the count is not included.  The default value is \"false\".",
+        "in": "query",
+        "name": "totalResults",
+        "schema": {
+          "type": "boolean"
+        }
+      }
+    },
+    "schemas": {
+      "batch-request": {
+        "properties": {
+          "parts": {
+            "items": {
+              "$ref": "#/components/schemas/batch-request-part"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "parts"
+        ],
+        "type": "object"
+      },
+      "batch-request-part": {
+        "properties": {
+          "effectiveOf": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "ifMatch": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "ifNoneMatch": {
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "type": "array"
+          },
+          "operation": {
+            "enum": [
+              "create",
+              "delete",
+              "get",
+              "invoke",
+              "update",
+              "upsert"
+            ],
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "path",
+          "operation"
+        ],
+        "type": "object"
+      },
+      "batch-response": {
+        "properties": {
+          "parts": {
+            "items": {
+              "$ref": "#/components/schemas/batch-response-part"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "parts"
+        ],
+        "type": "object"
+      },
+      "batch-response-part": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/batch-request-part"
+          },
+          {
+            "properties": {
+              "preconditionSucceeded": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Oracle REST APIs for resources in version 11.13.18.05",
+    "version": "11.13.18.05"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "description": "version representation",
+        "operationId": "version_representation",
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "adf:extension": {
+                      "properties": {
+                        "allowedFrameworkVersions": {
+                          "items": {
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "defaultFrameworkVersion": {
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "isLatest": {
+                      "type": "boolean"
+                    },
+                    "lifecycle": {
+                      "type": "string"
+                    },
+                    "links": {
+                      "items": {
+                        "properties": {
+                          "href": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "enum": [
+                              "item",
+                              "describe"
+                            ],
+                            "type": "string"
+                          },
+                          "name": {
+                            "enum": [
+                              "self",
+                              "canonical",
+                              "predecessor-version",
+                              "successor-version",
+                              "describe",
+                              "openapi"
+                            ],
+                            "type": "string"
+                          },
+                          "rel": {
+                            "enum": [
+                              "self",
+                              "canonical",
+                              "predecessor-version",
+                              "successor-version",
+                              "describe",
+                              "openapi"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "version representation"
+      },
+      "post": {
+        "description": "batch",
+        "operationId": "batch",
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.batch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/batch-request"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/vnd.oracle.adf.batch+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/batch-response"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "batch"
+      }
+    },
+    "/timeCardAttestations": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeCardAttestations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/parameters/timeCardAttestations-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/responses/timeCardAttestations-collection-response"
+          }
+        },
+        "summary": "Get all",
+        "tags": [
+          "timeCardAttestations"
+        ]
+      },
+      "post": {
+        "description": "Create or upsert",
+        "operationId": "create_timeCardAttestations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/Upsert-Mode"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/requestBodies/timeCardAttestations-item-post-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/responses/timeCardAttestations-item-response"
+          }
+        },
+        "summary": "Create",
+        "tags": [
+          "timeCardAttestations"
+        ]
+      }
+    },
+    "/timeCardAttestations/{timeCardAttestations_Id}": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCardAttestations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/responses/timeCardAttestations-item-response"
+          }
+        },
+        "summary": "Get",
+        "tags": [
+          "timeCardAttestations"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/parameters/timeCardAttestations_Id"
+        }
+      ],
+      "patch": {
+        "description": "Update",
+        "operationId": "update_timeCardAttestations",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/requestBodies/timeCardAttestations-item-patch-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/responses/timeCardAttestations-item-response"
+          }
+        },
+        "summary": "Update",
+        "tags": [
+          "timeCardAttestations"
+        ]
+      }
+    },
+    "/timeCardAttestations/{timeCardAttestations_Id}/child/questionnaireResponses": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeCardAttestations-questionnaireResponses",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/parameters/timeCardAttestations-questionnaireResponses-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/responses/timeCardAttestations-questionnaireResponses-collection-response"
+          }
+        },
+        "summary": "Get all questionnaire responses",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/parameters/timeCardAttestations_Id"
+        }
+      ],
+      "post": {
+        "description": "Create or upsert",
+        "operationId": "create_timeCardAttestations-questionnaireResponses",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/Upsert-Mode"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/requestBodies/timeCardAttestations-questionnaireResponses-item-post-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/responses/timeCardAttestations-questionnaireResponses-item-response"
+          }
+        },
+        "summary": "Create a questionnaire response",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses"
+        ]
+      }
+    },
+    "/timeCardAttestations/{timeCardAttestations_Id}/child/questionnaireResponses/{timeCardAttestations_questionnaireResponses_Id}": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCardAttestations-questionnaireResponses",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/responses/timeCardAttestations-questionnaireResponses-item-response"
+          }
+        },
+        "summary": "Get a questionnaire response",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/parameters/timeCardAttestations_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/parameters/timeCardAttestations_questionnaireResponses_Id"
+        }
+      ],
+      "patch": {
+        "description": "Update",
+        "operationId": "update_timeCardAttestations-questionnaireResponses",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/requestBodies/timeCardAttestations-questionnaireResponses-item-patch-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/responses/timeCardAttestations-questionnaireResponses-item-response"
+          }
+        },
+        "summary": "Update a questionnaire response",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses"
+        ]
+      }
+    },
+    "/timeCardAttestations/{timeCardAttestations_Id}/child/questionnaireResponses/{timeCardAttestations_questionnaireResponses_Id}/child/questionResponses": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeCardAttestations-questionnaireResponses-questionResponses",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/parameters/timeCardAttestations-questionnaireResponses-questionResponses-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/responses/timeCardAttestations-questionnaireResponses-questionResponses-collection-response"
+          }
+        },
+        "summary": "Get all question responses",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/parameters/timeCardAttestations_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/parameters/timeCardAttestations_questionnaireResponses_Id"
+        }
+      ],
+      "post": {
+        "description": "Create or upsert",
+        "operationId": "create_timeCardAttestations-questionnaireResponses-questionResponses",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/Upsert-Mode"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/requestBodies/timeCardAttestations-questionnaireResponses-questionResponses-item-post-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/responses/timeCardAttestations-questionnaireResponses-questionResponses-item-response"
+          }
+        },
+        "summary": "Create a question response",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses"
+        ]
+      }
+    },
+    "/timeCardAttestations/{timeCardAttestations_Id}/child/questionnaireResponses/{timeCardAttestations_questionnaireResponses_Id}/child/questionResponses/{timeCardAttestations_questionnaireResponses_questionResponses_Id}": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCardAttestations-questionnaireResponses-questionResponses",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/responses/timeCardAttestations-questionnaireResponses-questionResponses-item-response"
+          }
+        },
+        "summary": "Get a question response",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/parameters/timeCardAttestations_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/parameters/timeCardAttestations_questionnaireResponses_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/parameters/timeCardAttestations_questionnaireResponses_questionResponses_Id"
+        }
+      ],
+      "patch": {
+        "description": "Update",
+        "operationId": "update_timeCardAttestations-questionnaireResponses-questionResponses",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/requestBodies/timeCardAttestations-questionnaireResponses-questionResponses-item-patch-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/responses/timeCardAttestations-questionnaireResponses-questionResponses-item-response"
+          }
+        },
+        "summary": "Update a question response",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses"
+        ]
+      }
+    },
+    "/timeCardAttestations/{timeCardAttestations_Id}/child/questionnaireResponses/{timeCardAttestations_questionnaireResponses_Id}/child/questionResponses/{timeCardAttestations_questionnaireResponses_questionResponses_Id}/child/questionResponseAttachments": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses.questionResponseAttachments#/components/parameters/timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses.questionResponseAttachments#/components/responses/timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments-collection-response"
+          }
+        },
+        "summary": "Get all response attachments",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses/questionResponseAttachments"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/parameters/timeCardAttestations_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/parameters/timeCardAttestations_questionnaireResponses_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/parameters/timeCardAttestations_questionnaireResponses_questionResponses_Id"
+        }
+      ],
+      "post": {
+        "description": "Create or upsert",
+        "operationId": "create_timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/Upsert-Mode"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses.questionResponseAttachments#/components/requestBodies/timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments-item-post-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses.questionResponseAttachments#/components/responses/timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments-item-response"
+          }
+        },
+        "summary": "Create a response attachment",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses/questionResponseAttachments"
+        ]
+      }
+    },
+    "/timeCardAttestations/{timeCardAttestations_Id}/child/questionnaireResponses/{timeCardAttestations_questionnaireResponses_Id}/child/questionResponses/{timeCardAttestations_questionnaireResponses_questionResponses_Id}/child/questionResponseAttachments/{timeCardAttestations_questionnaireResponses_questionResponses_questionResponseAttachments_Id}": {
+      "delete": {
+        "description": "Delete",
+        "operationId": "delete_timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "No Content. This task does not return elements in the response body."
+          }
+        },
+        "summary": "Delete a response attachment",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses/questionResponseAttachments"
+        ]
+      },
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses.questionResponseAttachments#/components/responses/timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments-item-response"
+          }
+        },
+        "summary": "Get a response attachment",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses/questionResponseAttachments"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/parameters/timeCardAttestations_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/parameters/timeCardAttestations_questionnaireResponses_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/parameters/timeCardAttestations_questionnaireResponses_questionResponses_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses.questionResponseAttachments#/components/parameters/timeCardAttestations_questionnaireResponses_questionResponses_questionResponseAttachments_Id"
+        }
+      ],
+      "patch": {
+        "description": "Update",
+        "operationId": "update_timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses.questionResponseAttachments#/components/requestBodies/timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments-item-patch-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses.questionResponseAttachments#/components/responses/timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments-item-response"
+          }
+        },
+        "summary": "Update a response attachment",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses/questionResponseAttachments"
+        ]
+      }
+    },
+    "/timeCardAttestations/{timeCardAttestations_Id}/child/questionnaireResponses/{timeCardAttestations_questionnaireResponses_Id}/child/questionResponses/{timeCardAttestations_questionnaireResponses_questionResponses_Id}/child/questionResponseAttachments/{timeCardAttestations_questionnaireResponses_questionResponses_questionResponseAttachments_Id}/enclosure/FileContents": {
+      "delete": {
+        "description": "Delete",
+        "operationId": "delete_timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments-FileContents",
+        "responses": {
+          "default": {
+            "description": "No Content. This task does not return elements in the response body."
+          }
+        },
+        "summary": "Delete",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses/questionResponseAttachments"
+        ]
+      },
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments-FileContents",
+        "responses": {
+          "default": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "Get",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses/questionResponseAttachments"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/parameters/timeCardAttestations_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/parameters/timeCardAttestations_questionnaireResponses_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/parameters/timeCardAttestations_questionnaireResponses_questionResponses_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses.questionResponseAttachments#/components/parameters/timeCardAttestations_questionnaireResponses_questionResponses_questionResponseAttachments_Id"
+        }
+      ],
+      "put": {
+        "description": "Replace",
+        "operationId": "replace_timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments-FileContents",
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "description": "No Content. This task does not return elements in the response body."
+          }
+        },
+        "summary": "Replace",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses/questionResponseAttachments"
+        ]
+      }
+    },
+    "/timeCardAttestations/{timeCardAttestations_Id}/child/questionnaireResponses/{timeCardAttestations_questionnaireResponses_Id}/child/questionResponses/{timeCardAttestations_questionnaireResponses_questionResponses_Id}/child/questionResponseAttachments/{timeCardAttestations_questionnaireResponses_questionResponses_questionResponseAttachments_Id}/enclosure/FileWebImage": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCardAttestations-questionnaireResponses-questionResponses-questionResponseAttachments-FileWebImage",
+        "responses": {
+          "default": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "Get",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses/questionResponseAttachments"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/parameters/timeCardAttestations_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/parameters/timeCardAttestations_questionnaireResponses_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/parameters/timeCardAttestations_questionnaireResponses_questionResponses_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses.questionResponseAttachments#/components/parameters/timeCardAttestations_questionnaireResponses_questionResponses_questionResponseAttachments_Id"
+        }
+      ]
+    },
+    "/timeCardAttestations/{timeCardAttestations_Id}/child/questionnaireResponses/{timeCardAttestations_questionnaireResponses_Id}/child/questionResponses/{timeCardAttestations_questionnaireResponses_questionResponses_Id}/enclosure/AnswerLargeObject": {
+      "delete": {
+        "description": "Delete",
+        "operationId": "delete_timeCardAttestations-questionnaireResponses-questionResponses-AnswerLargeObject",
+        "responses": {
+          "default": {
+            "description": "No Content. This task does not return elements in the response body."
+          }
+        },
+        "summary": "Delete",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses"
+        ]
+      },
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCardAttestations-questionnaireResponses-questionResponses-AnswerLargeObject",
+        "responses": {
+          "default": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "Get",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations#/components/parameters/timeCardAttestations_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses#/components/parameters/timeCardAttestations_questionnaireResponses_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCardAttestations.questionnaireResponses.questionResponses#/components/parameters/timeCardAttestations_questionnaireResponses_questionResponses_Id"
+        }
+      ],
+      "put": {
+        "description": "Replace",
+        "operationId": "replace_timeCardAttestations-questionnaireResponses-questionResponses-AnswerLargeObject",
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "description": "No Content. This task does not return elements in the response body."
+          }
+        },
+        "summary": "Replace",
+        "tags": [
+          "timeCardAttestations/questionnaireResponses/questionResponses"
+        ]
+      }
+    },
+    "/timeCards": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/responses/timeCards-collection-response"
+          }
+        },
+        "summary": "Get all",
+        "tags": [
+          "timeCards"
+        ]
+      },
+      "post": {
+        "description": "Create or upsert",
+        "operationId": "create_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/Upsert-Mode"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/requestBodies/timeCards-item-post-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/responses/timeCards-item-response"
+          }
+        },
+        "summary": "Create",
+        "tags": [
+          "timeCards"
+        ]
+      }
+    },
+    "/timeCards/action/approveAction": {
+      "post": {
+        "description": "approveAction",
+        "operationId": "doall_approveAction_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "comments": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCards": {
+                    "items": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "userContext": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "approveAction",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/clearResubmissionStatusAction": {
+      "post": {
+        "description": "clearResubmissionStatusAction",
+        "operationId": "doall_clearResubmissionStatusAction_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "comments": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCards": {
+                    "items": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "userContext": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "clearResubmissionStatusAction",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/computeTimeTotals": {
+      "post": {
+        "description": "computeTimeTotals",
+        "operationId": "doall_computeTimeTotals_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "timeCards": {
+                    "items": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "userContext": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "computeTimeTotals",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/deleteAction": {
+      "post": {
+        "description": "deleteAction",
+        "operationId": "doall_deleteAction_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "comments": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCards": {
+                    "items": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "userContext": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "deleteAction",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/fetchTimeCardFieldUnitOfMeasures": {
+      "post": {
+        "description": "fetchTimeCardFieldUnitOfMeasures",
+        "operationId": "doall_fetchTimeCardFieldUnitOfMeasures_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "timeCardFields": {
+                    "items": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "fetchTimeCardFieldUnitOfMeasures",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/findByAdvancedSearchQuery": {
+      "post": {
+        "description": "findByAdvancedSearchQuery",
+        "operationId": "doall_findByAdvancedSearchQuery_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "autocompleteQuery": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "displayFields": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "filters": {
+                    "items": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "limit": {
+                    "nullable": true,
+                    "type": "integer"
+                  },
+                  "offset": {
+                    "nullable": true,
+                    "type": "integer"
+                  },
+                  "query": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "searchFields": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "sort": {
+                    "items": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "items": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "items": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "findByAdvancedSearchQuery",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/generateCalculatedTimeEntries": {
+      "post": {
+        "description": "generateCalculatedTimeEntries",
+        "operationId": "doall_generateCalculatedTimeEntries_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "timeCards": {
+                    "items": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "userContext": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "generateCalculatedTimeEntries",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/generateTimeEntriesFromSchedule": {
+      "post": {
+        "description": "generateTimeEntriesFromSchedule",
+        "operationId": "doall_generateTimeEntriesFromSchedule_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "assignmentId": {
+                    "format": "BigInt",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "personId": {
+                    "format": "BigInt",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCardId": {
+                    "format": "BigInt",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCardStartDate": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCardStopDate": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "generateTimeEntriesFromSchedule",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/getAggregations": {
+      "post": {
+        "description": "getAggregations",
+        "operationId": "doall_getAggregations_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "facets": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "filters": {
+                    "items": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "query": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "searchFields": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "items": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "items": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "getAggregations",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/getTemplateForAppend": {
+      "post": {
+        "description": "getTemplateForAppend",
+        "operationId": "doall_getTemplateForAppend_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "assignmentId": {
+                    "format": "BigInt",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "layoutId": {
+                    "format": "BigInt",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "personId": {
+                    "format": "BigInt",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "templateIds": {
+                    "items": {
+                      "format": "BigInt",
+                      "type": "string"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "timeCardId": {
+                    "format": "BigInt",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCardStartDate": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCardStopDate": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "getTemplateForAppend",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/processTimeCard": {
+      "post": {
+        "description": "processTimeCard",
+        "operationId": "doall_processTimeCard_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "context": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCardId": {
+                    "format": "BigInt",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCardVersion": {
+                    "nullable": true,
+                    "type": "integer"
+                  },
+                  "userContext": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "processTimeCard",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/rejectAction": {
+      "post": {
+        "description": "rejectAction",
+        "operationId": "doall_rejectAction_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "comments": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCards": {
+                    "items": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "userContext": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "rejectAction",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/submitAction": {
+      "post": {
+        "description": "submitAction",
+        "operationId": "doall_submitAction_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "comments": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCards": {
+                    "items": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "userContext": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "submitAction",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/action/validateTimeCards": {
+      "post": {
+        "description": "validateTimeCards",
+        "operationId": "doall_validateTimeCards_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "timeCards": {
+                    "items": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "userContext": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "validateTimeCards",
+        "tags": [
+          "timeCards"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeCards/{timeCards_Id}": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/responses/timeCards-item-response"
+          }
+        },
+        "summary": "Get",
+        "tags": [
+          "timeCards"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        }
+      ],
+      "patch": {
+        "description": "Update",
+        "operationId": "update_timeCards",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/requestBodies/timeCards-item-patch-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/responses/timeCards-item-response"
+          }
+        },
+        "summary": "Update",
+        "tags": [
+          "timeCards"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/changeAuditReasons": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeCards-changeAuditReasons",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons#/components/parameters/timeCards-changeAuditReasons-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons#/components/responses/timeCards-changeAuditReasons-collection-response"
+          }
+        },
+        "summary": "Get all reasons associated with the changes made on the audited time card",
+        "tags": [
+          "timeCards/changeAuditReasons"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        }
+      ],
+      "post": {
+        "description": "Create or upsert",
+        "operationId": "create_timeCards-changeAuditReasons",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/Upsert-Mode"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons#/components/requestBodies/timeCards-changeAuditReasons-item-post-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons#/components/responses/timeCards-changeAuditReasons-item-response"
+          }
+        },
+        "summary": "Add reasons to the changes made on the audited time card",
+        "tags": [
+          "timeCards/changeAuditReasons"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/changeAuditReasons/{timeCards_changeAuditReasons_Id}": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCards-changeAuditReasons",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons#/components/responses/timeCards-changeAuditReasons-item-response"
+          }
+        },
+        "summary": "Get a reason associated with the changes made on the audited time card",
+        "tags": [
+          "timeCards/changeAuditReasons"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons#/components/parameters/timeCards_changeAuditReasons_Id"
+        }
+      ],
+      "patch": {
+        "description": "Update",
+        "operationId": "update_timeCards-changeAuditReasons",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons#/components/requestBodies/timeCards-changeAuditReasons-item-patch-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons#/components/responses/timeCards-changeAuditReasons-item-response"
+          }
+        },
+        "summary": "Update a reason associated with a change in the audited time card",
+        "tags": [
+          "timeCards/changeAuditReasons"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/changeAuditReasons/{timeCards_changeAuditReasons_Id}/child/changeAuditReasonForIndividualChanges": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeCards-changeAuditReasons-changeAuditReasonForIndividualChanges",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons.changeAuditReasonForIndividualChanges#/components/parameters/timeCards-changeAuditReasons-changeAuditReasonForIndividualChanges-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons.changeAuditReasonForIndividualChanges#/components/responses/timeCards-changeAuditReasons-changeAuditReasonForIndividualChanges-collection-response"
+          }
+        },
+        "summary": "Get all individual reasons associated with each change made on the audited time card",
+        "tags": [
+          "timeCards/changeAuditReasons/changeAuditReasonForIndividualChanges"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons#/components/parameters/timeCards_changeAuditReasons_Id"
+        }
+      ],
+      "post": {
+        "description": "Create or upsert",
+        "operationId": "create_timeCards-changeAuditReasons-changeAuditReasonForIndividualChanges",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/Upsert-Mode"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons.changeAuditReasonForIndividualChanges#/components/requestBodies/timeCards-changeAuditReasons-changeAuditReasonForIndividualChanges-item-post-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons.changeAuditReasonForIndividualChanges#/components/responses/timeCards-changeAuditReasons-changeAuditReasonForIndividualChanges-item-response"
+          }
+        },
+        "summary": "Add individual reasons to the changes made on the audited time card",
+        "tags": [
+          "timeCards/changeAuditReasons/changeAuditReasonForIndividualChanges"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/changeAuditReasons/{timeCards_changeAuditReasons_Id}/child/changeAuditReasonForIndividualChanges/{timeCards_changeAuditReasons_changeAuditReasonForIndividualChanges_Id}": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCards-changeAuditReasons-changeAuditReasonForIndividualChanges",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons.changeAuditReasonForIndividualChanges#/components/responses/timeCards-changeAuditReasons-changeAuditReasonForIndividualChanges-item-response"
+          }
+        },
+        "summary": "Get an individual reason associated with a change made on the audited time card",
+        "tags": [
+          "timeCards/changeAuditReasons/changeAuditReasonForIndividualChanges"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons#/components/parameters/timeCards_changeAuditReasons_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons.changeAuditReasonForIndividualChanges#/components/parameters/timeCards_changeAuditReasons_changeAuditReasonForIndividualChanges_Id"
+        }
+      ],
+      "patch": {
+        "description": "Update",
+        "operationId": "update_timeCards-changeAuditReasons-changeAuditReasonForIndividualChanges",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons.changeAuditReasonForIndividualChanges#/components/requestBodies/timeCards-changeAuditReasons-changeAuditReasonForIndividualChanges-item-patch-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.changeAuditReasons.changeAuditReasonForIndividualChanges#/components/responses/timeCards-changeAuditReasons-changeAuditReasonForIndividualChanges-item-response"
+          }
+        },
+        "summary": "Update an individual reason associated with a change in the audited time card",
+        "tags": [
+          "timeCards/changeAuditReasons/changeAuditReasonForIndividualChanges"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/emptyEntries": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeCards-emptyEntries",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries#/components/parameters/timeCards-emptyEntries-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries#/components/responses/timeCards-emptyEntries-collection-response"
+          }
+        },
+        "summary": "Get all empty time entries",
+        "tags": [
+          "timeCards/emptyEntries"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        }
+      ],
+      "post": {
+        "description": "Create or upsert",
+        "operationId": "create_timeCards-emptyEntries",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/Upsert-Mode"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries#/components/requestBodies/timeCards-emptyEntries-item-post-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries#/components/responses/timeCards-emptyEntries-item-response"
+          }
+        },
+        "summary": "Add an empty time entry",
+        "tags": [
+          "timeCards/emptyEntries"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/emptyEntries/{timeCards_emptyEntries_Id}": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCards-emptyEntries",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries#/components/responses/timeCards-emptyEntries-item-response"
+          }
+        },
+        "summary": "Get an empty time entry",
+        "tags": [
+          "timeCards/emptyEntries"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries#/components/parameters/timeCards_emptyEntries_Id"
+        }
+      ],
+      "patch": {
+        "description": "Update",
+        "operationId": "update_timeCards-emptyEntries",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries#/components/requestBodies/timeCards-emptyEntries-item-patch-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries#/components/responses/timeCards-emptyEntries-item-response"
+          }
+        },
+        "summary": "Update an empty time entry",
+        "tags": [
+          "timeCards/emptyEntries"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/emptyEntries/{timeCards_emptyEntries_Id}/child/timeCardFieldValues": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeCards-emptyEntries-timeCardFieldValues",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries.timeCardFieldValues#/components/parameters/timeCards-emptyEntries-timeCardFieldValues-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries.timeCardFieldValues#/components/responses/timeCards-emptyEntries-timeCardFieldValues-collection-response"
+          }
+        },
+        "summary": "Get all time card field values for an empty entry",
+        "tags": [
+          "timeCards/emptyEntries/timeCardFieldValues"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries#/components/parameters/timeCards_emptyEntries_Id"
+        }
+      ],
+      "post": {
+        "description": "Create or upsert",
+        "operationId": "create_timeCards-emptyEntries-timeCardFieldValues",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/Upsert-Mode"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries.timeCardFieldValues#/components/requestBodies/timeCards-emptyEntries-timeCardFieldValues-item-post-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries.timeCardFieldValues#/components/responses/timeCards-emptyEntries-timeCardFieldValues-item-response"
+          }
+        },
+        "summary": "Create an empty time entry with time card field values",
+        "tags": [
+          "timeCards/emptyEntries/timeCardFieldValues"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/emptyEntries/{timeCards_emptyEntries_Id}/child/timeCardFieldValues/{timeCards_emptyEntries_timeCardFieldValues_Id}": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCards-emptyEntries-timeCardFieldValues",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries.timeCardFieldValues#/components/responses/timeCards-emptyEntries-timeCardFieldValues-item-response"
+          }
+        },
+        "summary": "Get a time card field value for an empty entry",
+        "tags": [
+          "timeCards/emptyEntries/timeCardFieldValues"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries#/components/parameters/timeCards_emptyEntries_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries.timeCardFieldValues#/components/parameters/timeCards_emptyEntries_timeCardFieldValues_Id"
+        }
+      ],
+      "patch": {
+        "description": "Update",
+        "operationId": "update_timeCards-emptyEntries-timeCardFieldValues",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries.timeCardFieldValues#/components/requestBodies/timeCards-emptyEntries-timeCardFieldValues-item-patch-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.emptyEntries.timeCardFieldValues#/components/responses/timeCards-emptyEntries-timeCardFieldValues-item-response"
+          }
+        },
+        "summary": "Update a time card field value for an empty time entry",
+        "tags": [
+          "timeCards/emptyEntries/timeCardFieldValues"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/timeEntries": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeCards-timeEntries",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries#/components/parameters/timeCards-timeEntries-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries#/components/responses/timeCards-timeEntries-collection-response"
+          }
+        },
+        "summary": "Get all time entries",
+        "tags": [
+          "timeCards/timeEntries"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        }
+      ],
+      "post": {
+        "description": "Create or upsert",
+        "operationId": "create_timeCards-timeEntries",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/Upsert-Mode"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries#/components/requestBodies/timeCards-timeEntries-item-post-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries#/components/responses/timeCards-timeEntries-item-response"
+          }
+        },
+        "summary": "Create a time card with time entries",
+        "tags": [
+          "timeCards/timeEntries"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/timeEntries/{timeCards_timeEntries_Id}": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCards-timeEntries",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries#/components/responses/timeCards-timeEntries-item-response"
+          }
+        },
+        "summary": "Get a time entry",
+        "tags": [
+          "timeCards/timeEntries"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries#/components/parameters/timeCards_timeEntries_Id"
+        }
+      ],
+      "patch": {
+        "description": "Update",
+        "operationId": "update_timeCards-timeEntries",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries#/components/requestBodies/timeCards-timeEntries-item-patch-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries#/components/responses/timeCards-timeEntries-item-response"
+          }
+        },
+        "summary": "Update a time entry",
+        "tags": [
+          "timeCards/timeEntries"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/timeEntries/{timeCards_timeEntries_Id}/child/timeCardFieldValues": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeCards-timeEntries-timeCardFieldValues",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries.timeCardFieldValues#/components/parameters/timeCards-timeEntries-timeCardFieldValues-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries.timeCardFieldValues#/components/responses/timeCards-timeEntries-timeCardFieldValues-collection-response"
+          }
+        },
+        "summary": "Get all time card field values",
+        "tags": [
+          "timeCards/timeEntries/timeCardFieldValues"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries#/components/parameters/timeCards_timeEntries_Id"
+        }
+      ],
+      "post": {
+        "description": "Create or upsert",
+        "operationId": "create_timeCards-timeEntries-timeCardFieldValues",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/Upsert-Mode"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries.timeCardFieldValues#/components/requestBodies/timeCards-timeEntries-timeCardFieldValues-item-post-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries.timeCardFieldValues#/components/responses/timeCards-timeEntries-timeCardFieldValues-item-response"
+          }
+        },
+        "summary": "Create a time entry with time card field values",
+        "tags": [
+          "timeCards/timeEntries/timeCardFieldValues"
+        ]
+      }
+    },
+    "/timeCards/{timeCards_Id}/child/timeEntries/{timeCards_timeEntries_Id}/child/timeCardFieldValues/{timeCards_timeEntries_timeCardFieldValues_Id}": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeCards-timeEntries-timeCardFieldValues",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries.timeCardFieldValues#/components/responses/timeCards-timeEntries-timeCardFieldValues-item-response"
+          }
+        },
+        "summary": "Get a time card field value",
+        "tags": [
+          "timeCards/timeEntries/timeCardFieldValues"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards#/components/parameters/timeCards_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries#/components/parameters/timeCards_timeEntries_Id"
+        },
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries.timeCardFieldValues#/components/parameters/timeCards_timeEntries_timeCardFieldValues_Id"
+        }
+      ],
+      "patch": {
+        "description": "Update",
+        "operationId": "update_timeCards-timeEntries-timeCardFieldValues",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries.timeCardFieldValues#/components/requestBodies/timeCards-timeEntries-timeCardFieldValues-item-patch-request"
+        },
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeCards.timeEntries.timeCardFieldValues#/components/responses/timeCards-timeEntries-timeCardFieldValues-item-response"
+          }
+        },
+        "summary": "Update a time card field value",
+        "tags": [
+          "timeCards/timeEntries/timeCardFieldValues"
+        ]
+      }
+    },
+    "/timeChangeAudits": {
+      "get": {
+        "description": "Get all",
+        "operationId": "getall_timeChangeAudits",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/limit"
+          },
+          {
+            "$ref": "#/components/parameters/offset"
+          },
+          {
+            "$ref": "#/components/parameters/totalResults"
+          },
+          {
+            "$ref": "#/components/parameters/q"
+          },
+          {
+            "$ref": "#/components/parameters/orderBy"
+          },
+          {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeChangeAudits#/components/parameters/timeChangeAudits-finder"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeChangeAudits#/components/responses/timeChangeAudits-collection-response"
+          }
+        },
+        "summary": "Get all",
+        "tags": [
+          "timeChangeAudits"
+        ]
+      }
+    },
+    "/timeChangeAudits/action/findByAdvancedSearchQuery": {
+      "post": {
+        "description": "findByAdvancedSearchQuery",
+        "operationId": "doall_findByAdvancedSearchQuery_timeChangeAudits",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "autocompleteQuery": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "displayFields": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "filters": {
+                    "items": {
+                      "additionalProperties": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "limit": {
+                    "nullable": true,
+                    "type": "integer"
+                  },
+                  "offset": {
+                    "nullable": true,
+                    "type": "integer"
+                  },
+                  "query": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "searchFields": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  },
+                  "sort": {
+                    "items": {
+                      "additionalProperties": {
+                        "type": "string"
+                      },
+                      "type": "object"
+                    },
+                    "nullable": true,
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "items": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "additionalProperties": {
+                        "items": {
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "findByAdvancedSearchQuery",
+        "tags": [
+          "timeChangeAudits"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeChangeAudits/action/getTimeEntryFields": {
+      "post": {
+        "description": "getTimeEntryFields",
+        "operationId": "doall_getTimeEntryFields_timeChangeAudits",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.oracle.adf.action+json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "personId": {
+                    "format": "BigInt",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCardId": {
+                    "format": "BigInt",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCardStartDate": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeCardStopDate": {
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeEntryId": {
+                    "format": "BigInt",
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "timeEntryVersion": {
+                    "nullable": true,
+                    "type": "integer"
+                  },
+                  "userContext": {
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "description": "The following table describes the body parameters in the request for this task."
+        },
+        "responses": {
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              },
+              "application/vnd.oracle.adf.actionresult+json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "result": {
+                      "items": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The following table describes the default response for this task."
+          }
+        },
+        "summary": "getTimeEntryFields",
+        "tags": [
+          "timeChangeAudits"
+        ],
+        "x-hints": {
+          "batchEnabled": false
+        }
+      }
+    },
+    "/timeChangeAudits/{timeChangeAudits_Id}": {
+      "get": {
+        "description": "Get",
+        "operationId": "get_timeChangeAudits",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/expand"
+          },
+          {
+            "$ref": "#/components/parameters/fields"
+          },
+          {
+            "$ref": "#/components/parameters/onlyData"
+          },
+          {
+            "$ref": "#/components/parameters/dependency"
+          },
+          {
+            "$ref": "#/components/parameters/links"
+          },
+          {
+            "$ref": "#/components/parameters/REST-Framework-Version"
+          },
+          {
+            "$ref": "#/components/parameters/Metadata-Context"
+          }
+        ],
+        "responses": {
+          "default": {
+            "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeChangeAudits#/components/responses/timeChangeAudits-item-response"
+          }
+        },
+        "summary": "Get",
+        "tags": [
+          "timeChangeAudits"
+        ]
+      },
+      "parameters": [
+        {
+          "$ref": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/describe.openapi?partialDescriptionForCatalogOpenAPI=timeChangeAudits#/components/parameters/timeChangeAudits_Id"
+        }
+      ]
+    }
+  },
+  "servers": [
+    {
+      "url": "https://eclf.fa.em2.oraclecloud.com:443/hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9"
+    }
+  ],
+  "tags": [
+    {
+      "name": "timeCards"
+    },
+    {
+      "description": "The changeAuditReasons resource provides the reasons for all audited changes made on the time card.",
+      "name": "timeCards/changeAuditReasons"
+    },
+    {
+      "description": "The changeAuditReasonForIndividualChanges resource provides the reason for each audited change made on the time card.",
+      "name": "timeCards/changeAuditReasons/changeAuditReasonForIndividualChanges"
+    },
+    {
+      "description": "The emptyEntries resource provides the details of empty time entries for a given time card.",
+      "name": "timeCards/emptyEntries"
+    },
+    {
+      "description": "The timeCardFieldValues resource is a child of the emptyEntries resource and lets people save time card field values for empty time entries.",
+      "name": "timeCards/emptyEntries/timeCardFieldValues"
+    },
+    {
+      "description": "The timeEntries resource is a child of the timeCards resource and lets people save or submit time card entries.",
+      "name": "timeCards/timeEntries"
+    },
+    {
+      "description": "The timeCardFieldValues resource is a child of the timeCards resource and lets people save time card field values for time entries.",
+      "name": "timeCards/timeEntries/timeCardFieldValues"
+    },
+    {
+      "name": "timeChangeAudits"
+    },
+    {
+      "name": "timeCardAttestations"
+    },
+    {
+      "description": "The questionnaireResponses resource includes the details of the attempts made by a participant when responding to a questionnaire.",
+      "name": "timeCardAttestations/questionnaireResponses"
+    },
+    {
+      "description": "The questionResponses resource is a child of the questionnaireResponses resource. It includes responses to specific questions within a questionnaire.",
+      "name": "timeCardAttestations/questionnaireResponses/questionResponses"
+    },
+    {
+      "description": "The questionResponseAttachments resource is a child of the questionResponses resource. It includes attachments added in response to a question.",
+      "name": "timeCardAttestations/questionnaireResponses/questionResponses/questionResponseAttachments"
+    }
+  ]
+}
