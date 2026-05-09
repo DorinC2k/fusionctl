@@ -631,7 +631,7 @@ This will help us implement the Oracle API client accurately.
 
 ## Project Status
 
-- **Version**: 1.0.1 (Alpha)
+- **Version**: 1.1.0 (Alpha)
 - **Status**: In development
 - **Last Updated**: 2026-05-08
 - **Maintainer**: Your Name

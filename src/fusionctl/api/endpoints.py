@@ -24,5 +24,8 @@ class OracleEndpoints:
     def timecard_entry_details(self) -> str:
         return f"{self.api_root}/timeCardEntryDetails"
 
+    def timecard_field_values(self) -> str:
+        return f"{self.api_root}/timeCardFieldValues"
+
     def tokenrelay(self) -> str:
         return f"{self.base_url}/fscmRestApi/tokenrelay"

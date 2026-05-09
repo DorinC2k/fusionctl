@@ -5,6 +5,7 @@ from typer.testing import CliRunner
 
 from fusionctl.main import app
 from fusionctl.services.holiday_calendar import HolidayCacheResult, PublicHoliday
+from fusionctl.services.timecard_execution import TimecardExecutionResult
 
 runner = CliRunner()
 
@@ -89,7 +90,16 @@ def test_log_week_holiday_calendar_lists_public_holiday_carryover(monkeypatch) -
     assert "2026-05-08  1h  Public Holiday" in result.stdout
 
 
-def test_log_month_without_dry_run_fails_until_oracle_batch_write_is_wired() -> None:
+def test_log_month_without_dry_run_writes_planned_entries(monkeypatch) -> None:
+    async def execute_period_logs(entries) -> TimecardExecutionResult:
+        assert entries
+        return TimecardExecutionResult(written_entries=len(entries), skipped_dates=0, processed_cards=1)
+
+    monkeypatch.setattr(
+        "fusionctl.cli.commands.timesheet.execute_period_logs",
+        execute_period_logs,
+    )
+
     result = runner.invoke(
         app,
         [
@@ -102,8 +112,10 @@ def test_log_month_without_dry_run_fails_until_oracle_batch_write_is_wired() -> 
         ],
     )
 
-    assert result.exit_code == 3
-    assert "Oracle batch logging is not wired yet" in result.stderr
+    assert result.exit_code == 0
+    output = normalized_output(result.stdout)
+    assert "Ready" in output
+    assert "Wrote" in output
 
 
 def test_log_last_month_requires_project_and_task() -> None:

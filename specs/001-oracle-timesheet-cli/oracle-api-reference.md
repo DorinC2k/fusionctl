@@ -813,7 +813,7 @@ All requests should include:
 Content-Type: application/json
 Accept: application/json
 Cookie: [session cookies from authentication]
-User-Agent: fusionctl/1.0.1
+User-Agent: fusionctl/1.1.0
 ```
 
 ---

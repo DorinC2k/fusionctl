@@ -1,17 +1,20 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import date as Date
 from decimal import Decimal, InvalidOperation
 
-import typer
 import httpx
+import typer
 
 from fusionctl.cli.utils import console, exit_with_error, success
+from fusionctl.exceptions import AuthenticationError, OracleApiError, StorageError
 from fusionctl.services.holiday_calendar import (
     DEFAULT_CACHE_MAX_AGE_DAYS,
     HolidayCalendar,
     load_holidays,
 )
+from fusionctl.services.timecard_execution import execute_period_logs
 from fusionctl.services.log_periods import LogPeriod, PlannedLogEntry, WorkPattern, plan_period_logs
 from fusionctl.services.log_periods import period_bounds
 
@@ -80,10 +83,17 @@ def _log_period(
 
     _render_plan(period_label, entries, dry_run=dry_run)
     if not dry_run:
-        exit_with_error(
-            "Oracle batch logging is not wired yet. Re-run with --dry-run to preview entries.",
-            code=3,
+        try:
+            result = asyncio.run(execute_period_logs(entries))
+        except (AuthenticationError, OracleApiError, StorageError, httpx.HTTPError) as exc:
+            exit_with_error(str(exc), code=3)
+        success(
+            f"Wrote {result.written_entries} entries across {result.processed_cards} timecards"
         )
+        if result.skipped_dates:
+            console.print(
+                f"  Skipped {result.skipped_dates} dates with Oracle prefilled leave or holidays"
+            )
 
 
 def _load_holiday_dates(
