@@ -176,4 +176,4 @@ Linux package artifacts are built with:
 poetry run poe package-linux
 ```
 
-The APT repository publisher is in `.github/workflows/publish-apt-repo.yml` and is intended for version tags such as `v1.0.0`.
+The APT repository publisher is in `.github/workflows/publish-apt-repo.yml` and is intended for version tags such as `v1.0.1`.
