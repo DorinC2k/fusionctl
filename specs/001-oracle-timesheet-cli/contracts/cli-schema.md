@@ -430,6 +430,9 @@ fusion timesheet log-week [OPTIONS]
 --location <value>             # Oracle location for every entry (default: Work from office (employment contract))
 --work-pattern <pattern>       # Location pattern: office|home|hybrid (default: office)
 --work-from-home-days <n>      # WFH days per week for hybrid pattern (default: 2)
+--holiday-calendar <name>      # Public holiday calendar for weekend carryover, e.g. moldova
+--refresh-holidays             # Refresh holiday cache before planning
+--holiday-cache-days <n>       # Refresh cached holidays older than this many days (default: 30; 0 = always)
 --notes <notes>                # Entry notes applied to each day (optional)
 --dry-run / --execute          # Preview or write entries (default: dry-run while batch write is being wired)
 --help, -h                     # Show help
@@ -441,7 +444,23 @@ fusion timesheet log-week [OPTIONS]
 - Defaults location to `Work from office (employment contract)`.
 - `--location "Work from home"` applies one location to every planned entry.
 - `--work-pattern hybrid --work-from-home-days 2` assigns the first two working days in each week to `Work from home`; remaining working days use `Work from office (employment contract)`.
+- `--holiday-calendar moldova` uses cached Republic of Moldova public holidays to split the previous working day into `7h Regular + 1h Public Holiday` when a public holiday falls on a weekend and Oracle has not prefilled it.
+- Holiday cache files are stored under `./.fusionctl/holiday-calendars` relative to the directory where the user runs the command.
 - Uses the same public-holiday, absence, and idempotency rules as `fusion timesheet log` when execution is wired.
+
+### COMMAND: `fusion timesheet refresh-holidays`
+
+**Purpose**: Refresh a working-directory public holiday cache.
+
+**Signature**:
+```
+fusion timesheet refresh-holidays --holiday-calendar <name> [--year YYYY]
+```
+
+**Behavior**:
+- Fetches the selected calendar from its source, currently `https://zilelibere.md/<year>/` for `moldova`.
+- Writes a JSON cache file under `./.fusionctl/holiday-calendars`.
+- The cache is intentionally local to the directory where the user runs the command.
 
 ---
 

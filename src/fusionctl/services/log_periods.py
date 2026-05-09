@@ -6,8 +6,11 @@ from datetime import timedelta
 from decimal import Decimal
 from enum import Enum
 
+from fusionctl.models.timesheet import TimeType
+
 LOCATION_WORK_FROM_HOME = "Work from home"
 LOCATION_WORK_FROM_OFFICE = "Work from office (employment contract)"
+PUBLIC_HOLIDAY_CARRYOVER_HOURS = Decimal("1")
 
 
 class LogPeriod(str, Enum):
@@ -32,6 +35,7 @@ class PeriodBounds:
 class PlannedLogEntry:
     date: Date
     hours: Decimal
+    time_type: TimeType
     project: str
     task: str
     location: str
@@ -98,6 +102,7 @@ def plan_period_logs(
     location: str | None = None,
     work_pattern: WorkPattern = WorkPattern.OFFICE,
     work_from_home_days: int = 2,
+    holiday_dates: set[Date] | None = None,
     notes: str | None = None,
     today: Date | None = None,
 ) -> list[PlannedLogEntry]:
@@ -112,8 +117,10 @@ def plan_period_logs(
     bounds = period_bounds(period, today=today)
     working_days = working_days_between(bounds.start, bounds.end)
     return [
-        PlannedLogEntry(
-            date=entry_date,
+        entry
+        for entry_date in working_days
+        for entry in _entries_for_day(
+            entry_date,
             hours=hours,
             project=project,
             task=task,
@@ -124,10 +131,73 @@ def plan_period_logs(
                 work_from_home_days=work_from_home_days,
                 period_working_days=working_days,
             ),
+            holiday_dates=holiday_dates or set(),
             notes=notes,
         )
-        for entry_date in working_days
     ]
+
+
+def _entries_for_day(
+    entry_date: Date,
+    *,
+    hours: Decimal,
+    project: str,
+    task: str,
+    location: str,
+    holiday_dates: set[Date],
+    notes: str | None,
+) -> list[PlannedLogEntry]:
+    carryover_holiday_count = _carryover_holiday_count(entry_date, holiday_dates)
+    carryover_hours = PUBLIC_HOLIDAY_CARRYOVER_HOURS * carryover_holiday_count
+    if carryover_hours <= 0:
+        return [
+            PlannedLogEntry(
+                date=entry_date,
+                hours=hours,
+                time_type=TimeType.REGULAR,
+                project=project,
+                task=task,
+                location=location,
+                notes=notes,
+            )
+        ]
+    if hours <= carryover_hours:
+        raise ValueError("Hours must be greater than public holiday carryover hours")
+    return [
+        PlannedLogEntry(
+            date=entry_date,
+            hours=hours - carryover_hours,
+            time_type=TimeType.REGULAR,
+            project=project,
+            task=task,
+            location=location,
+            notes=notes,
+        ),
+        PlannedLogEntry(
+            date=entry_date,
+            hours=carryover_hours,
+            time_type=TimeType.PUBLIC_HOLIDAY,
+            project=project,
+            task=task,
+            location=location,
+            notes=notes,
+        ),
+    ]
+
+
+def _carryover_holiday_count(entry_date: Date, holiday_dates: set[Date]) -> int:
+    return sum(
+        1
+        for holiday_date in holiday_dates
+        if holiday_date.weekday() >= 5 and _previous_working_day(holiday_date) == entry_date
+    )
+
+
+def _previous_working_day(value: Date) -> Date:
+    previous = value - timedelta(days=1)
+    while previous.weekday() >= 5:
+        previous -= timedelta(days=1)
+    return previous
 
 
 def _location_for_day(

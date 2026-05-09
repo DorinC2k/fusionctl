@@ -10,6 +10,7 @@ build/
 .coverage
 .fusion-recon/
 .fusion-cli/
+.fusionctl/
 .env
 .env.*
 !.env.example

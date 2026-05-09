@@ -243,6 +243,7 @@ class Timesheet(BaseModel):
 - `status` enum: Only valid states
 - `entries` list can be empty (draft timesheet)
 - Pre-added `Public Holiday` entries are preserved. When logging a full working day immediately before a public holiday, the planned entries are `7h Regular` plus `1h Public Holiday` on the working day.
+- A selected holiday calendar can also create this split when a public holiday falls on a weekend and Oracle has no pre-added row. The cache is stored under `./.fusionctl/holiday-calendars` in the user's current working directory.
 - Pre-filled absence entries are preserved. The CLI does not create regular work entries on dates that already contain an absence entry.
 
 **Query Methods**:

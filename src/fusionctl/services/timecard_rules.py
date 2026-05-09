@@ -23,6 +23,7 @@ def allocate_regular_day(
     entry_date: Date,
     hours: Decimal,
     existing_entries: list[TimeEntry],
+    known_public_holidays: set[Date] | None = None,
 ) -> list[TimeAllocation]:
     """Split a working day before a public holiday into regular and holiday time."""
     if hours <= 0:
@@ -34,19 +35,24 @@ def allocate_regular_day(
     if not _is_working_day(entry_date):
         allocations = [TimeAllocation(date=entry_date, hours=hours, time_type=TimeType.REGULAR)]
     else:
-        next_day = entry_date + timedelta(days=1)
-        if _has_public_holiday(existing_entries, next_day):
-            if hours <= PUBLIC_HOLIDAY_CARRYOVER_HOURS:
-                raise ValueError("Hours must be greater than 1 before a public holiday")
+        carryover_count = _carryover_holiday_count(
+            entry_date,
+            existing_entries,
+            known_public_holidays or set(),
+        )
+        carryover_hours = PUBLIC_HOLIDAY_CARRYOVER_HOURS * carryover_count
+        if carryover_hours:
+            if hours <= carryover_hours:
+                raise ValueError("Hours must be greater than public holiday carryover hours")
             allocations = [
                 TimeAllocation(
                     date=entry_date,
-                    hours=hours - PUBLIC_HOLIDAY_CARRYOVER_HOURS,
+                    hours=hours - carryover_hours,
                     time_type=TimeType.REGULAR,
                 ),
                 TimeAllocation(
                     date=entry_date,
-                    hours=PUBLIC_HOLIDAY_CARRYOVER_HOURS,
+                    hours=carryover_hours,
                     time_type=TimeType.PUBLIC_HOLIDAY,
                 ),
             ]
@@ -65,6 +71,32 @@ def _has_public_holiday(entries: list[TimeEntry], target_date: Date) -> bool:
         entry.date == target_date and entry.time_type == TimeType.PUBLIC_HOLIDAY
         for entry in entries
     )
+
+
+def _carryover_holiday_count(
+    entry_date: Date,
+    entries: list[TimeEntry],
+    known_public_holidays: set[Date],
+) -> int:
+    carryover_dates = {
+        entry.date
+        for entry in entries
+        if entry.time_type == TimeType.PUBLIC_HOLIDAY
+        and entry.date == entry_date + timedelta(days=1)
+    }
+    carryover_dates.update(
+        holiday_date
+        for holiday_date in known_public_holidays
+        if holiday_date.weekday() >= 5 and _previous_working_day(holiday_date) == entry_date
+    )
+    return len(carryover_dates)
+
+
+def _previous_working_day(value: Date) -> Date:
+    previous = value - timedelta(days=1)
+    while previous.weekday() >= 5:
+        previous -= timedelta(days=1)
+    return previous
 
 
 def _has_prefilled_non_working_entry(entries: list[TimeEntry], target_date: Date) -> bool:

@@ -127,6 +127,8 @@ As a user, I need to export timesheet data to CSV/JSON formats so I can use it i
 - **FR-016**: System MUST make repeated log operations idempotent by skipping allocations that already exist for the same date, time type, and hours
 - **FR-017**: System MUST support clearing user-entered rows from an editable timecard while preserving Oracle-owned non-working rows
 - **FR-018**: System MUST support deleting draft or entered timecards only after explicit user confirmation
+- **FR-019**: System MUST support a selectable holiday calendar, initially `moldova`, for public holidays that fall on weekends and are not prefilled by Oracle
+- **FR-020**: System MUST cache fetched holiday calendar data under `./.fusionctl/holiday-calendars` relative to the user's current working directory and provide a command/option to refresh that cache
 
 ### Key Entities
 

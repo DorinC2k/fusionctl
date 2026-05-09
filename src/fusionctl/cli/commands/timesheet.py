@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+from datetime import date as Date
 from decimal import Decimal, InvalidOperation
 
 import typer
+import httpx
 
 from fusionctl.cli.utils import console, exit_with_error, success
+from fusionctl.services.holiday_calendar import (
+    DEFAULT_CACHE_MAX_AGE_DAYS,
+    HolidayCalendar,
+    load_holidays,
+)
 from fusionctl.services.log_periods import LogPeriod, PlannedLogEntry, WorkPattern, plan_period_logs
+from fusionctl.services.log_periods import period_bounds
 
 app = typer.Typer(help="Timesheet commands")
 
@@ -24,7 +32,7 @@ def _render_plan(period_label: str, entries: list[PlannedLogEntry], *, dry_run: 
     for entry in entries:
         console.print(
             f"  {entry.date.isoformat()}  {entry.hours:g}h  "
-            f"{entry.project} / {entry.task}  {entry.location}"
+            f"{entry.time_type.value}  {entry.project} / {entry.task}  {entry.location}"
         )
     console.print(f"  Total: {total:g}h")
 
@@ -39,10 +47,19 @@ def _log_period(
     location: str | None,
     work_pattern: WorkPattern,
     work_from_home_days: int,
+    holiday_calendar: HolidayCalendar | None,
+    refresh_holidays: bool,
+    holiday_cache_days: int,
     notes: str | None,
     dry_run: bool,
 ) -> None:
     try:
+        holiday_dates = _load_holiday_dates(
+            period,
+            holiday_calendar=holiday_calendar,
+            refresh=refresh_holidays,
+            max_age_days=holiday_cache_days,
+        )
         entries = plan_period_logs(
             period,
             hours=_decimal_hours(hours),
@@ -51,9 +68,10 @@ def _log_period(
             location=location,
             work_pattern=work_pattern,
             work_from_home_days=work_from_home_days,
+            holiday_dates=holiday_dates,
             notes=notes,
         )
-    except ValueError as exc:
+    except (ValueError, httpx.HTTPError) as exc:
         exit_with_error(str(exc), code=2)
 
     if not entries:
@@ -66,6 +84,29 @@ def _log_period(
             "Oracle batch logging is not wired yet. Re-run with --dry-run to preview entries.",
             code=3,
         )
+
+
+def _load_holiday_dates(
+    period: LogPeriod,
+    *,
+    holiday_calendar: HolidayCalendar | None,
+    refresh: bool,
+    max_age_days: int,
+) -> set[Date]:
+    if holiday_calendar is None:
+        return set()
+    bounds = period_bounds(period)
+    years = range(bounds.start.year, bounds.end.year + 1)
+    dates: set[Date] = set()
+    for year in years:
+        result = load_holidays(
+            holiday_calendar,
+            year,
+            refresh=refresh,
+            max_age_days=max_age_days,
+        )
+        dates.update(holiday.date for holiday in result.holidays)
+    return dates
 
 
 @app.command("log-week")
@@ -90,6 +131,22 @@ def log_week(
         max=5,
         help="WFH days per week when --work-pattern hybrid is used.",
     ),
+    holiday_calendar: HolidayCalendar | None = typer.Option(
+        None,
+        "--holiday-calendar",
+        help="Holiday calendar for weekend public-holiday carryover, e.g. moldova.",
+    ),
+    refresh_holidays: bool = typer.Option(
+        False,
+        "--refresh-holidays",
+        help="Refresh the local holiday calendar cache before planning.",
+    ),
+    holiday_cache_days: int = typer.Option(
+        DEFAULT_CACHE_MAX_AGE_DAYS,
+        "--holiday-cache-days",
+        min=0,
+        help="Refresh cached holidays older than this many days. Use 0 to always refresh.",
+    ),
     notes: str | None = typer.Option(None, "--notes", help="Optional notes for each entry."),
     dry_run: bool = typer.Option(True, "--dry-run/--execute", help="Preview instead of writing."),
 ) -> None:
@@ -103,6 +160,9 @@ def log_week(
         location=location,
         work_pattern=work_pattern,
         work_from_home_days=work_from_home_days,
+        holiday_calendar=holiday_calendar,
+        refresh_holidays=refresh_holidays,
+        holiday_cache_days=holiday_cache_days,
         notes=notes,
         dry_run=dry_run,
     )
@@ -130,6 +190,22 @@ def log_month(
         max=5,
         help="WFH days per week when --work-pattern hybrid is used.",
     ),
+    holiday_calendar: HolidayCalendar | None = typer.Option(
+        None,
+        "--holiday-calendar",
+        help="Holiday calendar for weekend public-holiday carryover, e.g. moldova.",
+    ),
+    refresh_holidays: bool = typer.Option(
+        False,
+        "--refresh-holidays",
+        help="Refresh the local holiday calendar cache before planning.",
+    ),
+    holiday_cache_days: int = typer.Option(
+        DEFAULT_CACHE_MAX_AGE_DAYS,
+        "--holiday-cache-days",
+        min=0,
+        help="Refresh cached holidays older than this many days. Use 0 to always refresh.",
+    ),
     notes: str | None = typer.Option(None, "--notes", help="Optional notes for each entry."),
     dry_run: bool = typer.Option(True, "--dry-run/--execute", help="Preview instead of writing."),
 ) -> None:
@@ -143,6 +219,9 @@ def log_month(
         location=location,
         work_pattern=work_pattern,
         work_from_home_days=work_from_home_days,
+        holiday_calendar=holiday_calendar,
+        refresh_holidays=refresh_holidays,
+        holiday_cache_days=holiday_cache_days,
         notes=notes,
         dry_run=dry_run,
     )
@@ -170,6 +249,22 @@ def log_last_month(
         max=5,
         help="WFH days per week when --work-pattern hybrid is used.",
     ),
+    holiday_calendar: HolidayCalendar | None = typer.Option(
+        None,
+        "--holiday-calendar",
+        help="Holiday calendar for weekend public-holiday carryover, e.g. moldova.",
+    ),
+    refresh_holidays: bool = typer.Option(
+        False,
+        "--refresh-holidays",
+        help="Refresh the local holiday calendar cache before planning.",
+    ),
+    holiday_cache_days: int = typer.Option(
+        DEFAULT_CACHE_MAX_AGE_DAYS,
+        "--holiday-cache-days",
+        min=0,
+        help="Refresh cached holidays older than this many days. Use 0 to always refresh.",
+    ),
     notes: str | None = typer.Option(None, "--notes", help="Optional notes for each entry."),
     dry_run: bool = typer.Option(True, "--dry-run/--execute", help="Preview instead of writing."),
 ) -> None:
@@ -183,6 +278,35 @@ def log_last_month(
         location=location,
         work_pattern=work_pattern,
         work_from_home_days=work_from_home_days,
+        holiday_calendar=holiday_calendar,
+        refresh_holidays=refresh_holidays,
+        holiday_cache_days=holiday_cache_days,
         notes=notes,
         dry_run=dry_run,
+    )
+
+
+@app.command("refresh-holidays")
+def refresh_holidays(
+    holiday_calendar: HolidayCalendar = typer.Option(
+        ...,
+        "--holiday-calendar",
+        help="Holiday calendar to refresh, e.g. moldova.",
+    ),
+    year: int = typer.Option(
+        Date.today().year,
+        "--year",
+        min=2000,
+        max=2100,
+        help="Calendar year to refresh.",
+    ),
+) -> None:
+    """Refresh the working-directory holiday calendar cache."""
+    try:
+        result = load_holidays(holiday_calendar, year, refresh=True)
+    except (ValueError, httpx.HTTPError) as exc:
+        exit_with_error(str(exc), code=2)
+    success(
+        f"Cached {len(result.holidays)} holidays for {holiday_calendar.value} {year} "
+        f"at {result.cache_path}"
     )

@@ -14,6 +14,7 @@ from fusionctl.services.log_periods import (
     LOCATION_WORK_FROM_OFFICE,
     WorkPattern,
 )
+from fusionctl.models.timesheet import TimeType
 
 
 def test_current_week_bounds_stop_at_today() -> None:
@@ -72,6 +73,7 @@ def test_plan_period_logs_creates_one_entry_per_working_day() -> None:
         date(2026, 5, 8),
     ]
     assert {entry.hours for entry in entries} == {Decimal("8")}
+    assert {entry.time_type for entry in entries} == {TimeType.REGULAR}
     assert {entry.project for entry in entries} == {"WORDV266"}
     assert {entry.task for entry in entries} == {"02"}
     assert {entry.location for entry in entries} == {LOCATION_WORK_FROM_OFFICE}
@@ -135,6 +137,38 @@ def test_home_work_pattern_assigns_all_entries_to_home() -> None:
     )
 
     assert {entry.location for entry in entries} == {LOCATION_WORK_FROM_HOME}
+
+
+def test_weekend_holiday_calendar_splits_previous_working_day() -> None:
+    entries = plan_period_logs(
+        LogPeriod.CURRENT_WEEK,
+        hours=Decimal("8"),
+        project="WORDV266",
+        task="02",
+        holiday_dates={date(2026, 5, 9)},
+        today=date(2026, 5, 9),
+    )
+
+    assert [(entry.date, entry.hours, entry.time_type) for entry in entries][-2:] == [
+        (date(2026, 5, 8), Decimal("7"), TimeType.REGULAR),
+        (date(2026, 5, 8), Decimal("1"), TimeType.PUBLIC_HOLIDAY),
+    ]
+
+
+def test_sunday_holiday_calendar_splits_previous_friday() -> None:
+    entries = plan_period_logs(
+        LogPeriod.CURRENT_WEEK,
+        hours=Decimal("8"),
+        project="WORDV266",
+        task="02",
+        holiday_dates={date(2026, 3, 8)},
+        today=date(2026, 3, 8),
+    )
+
+    assert [(entry.date, entry.hours, entry.time_type) for entry in entries][-2:] == [
+        (date(2026, 3, 6), Decimal("7"), TimeType.REGULAR),
+        (date(2026, 3, 6), Decimal("1"), TimeType.PUBLIC_HOLIDAY),
+    ]
 
 
 def test_plan_period_logs_rejects_invalid_hours() -> None:

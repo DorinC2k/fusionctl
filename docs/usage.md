@@ -98,6 +98,22 @@ fusionctl timesheet log-week --project WORDV266 --task 02 --work-pattern hybrid 
 
 The hybrid pattern assigns the first working days in each week to `Work from home`. Remaining working days use `Work from office (employment contract)`.
 
+Apply a holiday calendar for weekend public holidays that Oracle may not prefill:
+
+```bash
+fusionctl timesheet log-week --project WORDV266 --task 02 --holiday-calendar moldova --dry-run
+```
+
+When a holiday from the calendar falls on a weekend, fusionctl splits the previous working day into `7h Regular` plus `1h Public Holiday`. Holiday data is cached under `./.fusionctl/holiday-calendars` in the directory where you run the command.
+
+Refresh the cache manually:
+
+```bash
+fusionctl timesheet refresh-holidays --holiday-calendar moldova --year 2026
+```
+
+Logging commands refresh missing or stale cache files automatically. The default staleness window is 30 days; use `--refresh-holidays` to force a refresh or `--holiday-cache-days 0` to always refresh.
+
 For `log-month`, fusionctl plans the full Monday-Sunday timecard weeks that overlap the current calendar month. This means the first planned week can include trailing days from the previous month, and the last planned week can include spillover days from the next month.
 
 `--dry-run` is the current default. `--execute` exists as the future write switch and currently fails clearly until the Oracle batch-write integration is wired into the CLI command path.

@@ -160,9 +160,37 @@ def test_weekend_before_public_holiday_does_not_split() -> None:
 
 
 def test_day_before_public_holiday_requires_more_than_carryover_hour() -> None:
-    with pytest.raises(ValueError, match="greater than 1"):
+    with pytest.raises(ValueError, match="greater than public holiday carryover hours"):
         allocate_regular_day(
             date(2026, 5, 7),
             Decimal("1"),
             [public_holiday(date(2026, 5, 8))],
         )
+
+
+def test_known_weekend_public_holiday_splits_previous_working_day() -> None:
+    allocations = allocate_regular_day(
+        date(2026, 5, 8),
+        Decimal("8"),
+        [],
+        known_public_holidays={date(2026, 5, 9)},
+    )
+
+    assert [(item.hours, item.time_type) for item in allocations] == [
+        (Decimal("7"), TimeType.REGULAR),
+        (Decimal("1"), TimeType.PUBLIC_HOLIDAY),
+    ]
+
+
+def test_known_sunday_public_holiday_splits_previous_friday() -> None:
+    allocations = allocate_regular_day(
+        date(2026, 3, 6),
+        Decimal("8"),
+        [],
+        known_public_holidays={date(2026, 3, 8)},
+    )
+
+    assert [(item.hours, item.time_type) for item in allocations] == [
+        (Decimal("7"), TimeType.REGULAR),
+        (Decimal("1"), TimeType.PUBLIC_HOLIDAY),
+    ]

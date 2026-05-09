@@ -49,14 +49,17 @@ Show whether a local session is present and still valid.
 Remove the stored local session.
 .SH TIMESHEET COMMANDS
 .TP
-.B fusionctl timesheet log-week --project CODE --task CODE [--hours HOURS] [--location VALUE] [--work-pattern PATTERN] [--work-from-home-days N] [--notes TEXT] [--dry-run]
+.B fusionctl timesheet log-week --project CODE --task CODE [--hours HOURS] [--location VALUE] [--work-pattern PATTERN] [--work-from-home-days N] [--holiday-calendar NAME] [--refresh-holidays] [--holiday-cache-days N] [--notes TEXT] [--dry-run]
 Plan one regular work entry for each weekday in the current week, Monday through today.
 .TP
-.B fusionctl timesheet log-month --project CODE --task CODE [--hours HOURS] [--location VALUE] [--work-pattern PATTERN] [--work-from-home-days N] [--notes TEXT] [--dry-run]
+.B fusionctl timesheet log-month --project CODE --task CODE [--hours HOURS] [--location VALUE] [--work-pattern PATTERN] [--work-from-home-days N] [--holiday-calendar NAME] [--refresh-holidays] [--holiday-cache-days N] [--notes TEXT] [--dry-run]
 Plan one regular work entry for each weekday in the weekly timecards that overlap the current calendar month.
 .TP
-.B fusionctl timesheet log-last-month --project CODE --task CODE [--hours HOURS] [--location VALUE] [--work-pattern PATTERN] [--work-from-home-days N] [--notes TEXT] [--dry-run]
+.B fusionctl timesheet log-last-month --project CODE --task CODE [--hours HOURS] [--location VALUE] [--work-pattern PATTERN] [--work-from-home-days N] [--holiday-calendar NAME] [--refresh-holidays] [--holiday-cache-days N] [--notes TEXT] [--dry-run]
 Plan one regular work entry for each weekday in the previous calendar month.
+.TP
+.B fusionctl timesheet refresh-holidays --holiday-calendar NAME [--year YYYY]
+Refresh the working-directory holiday calendar cache.
 .PP
 The period logging commands skip weekends. They currently dry-run by default. The
 .B --execute
@@ -74,6 +77,20 @@ and the remaining working days to office.
 .PP
 .B log-month
 uses full Monday-Sunday timecard weeks. The first planned week can include trailing days from the previous month, and the last planned week can include spillover days from the next month.
+.PP
+Use
+.B --holiday-calendar moldova
+to apply Republic of Moldova public holidays from the local holiday cache. If a public holiday falls on a weekend and Oracle does not prefill it, fusionctl splits the previous working day into
+.B 7h Regular
+plus
+.B 1h Public Holiday.
+Holiday cache files live under
+.I ./.fusionctl/holiday-calendars
+relative to the directory where the command is run. Use
+.B --refresh-holidays
+or
+.B fusionctl timesheet refresh-holidays
+to refresh them.
 .SH COMMON EXAMPLES
 .TP
 Authenticate with visible browser:
@@ -111,6 +128,16 @@ Preview a hybrid work pattern:
 fusionctl timesheet log-week --project WORDV266 --task 02 --work-pattern hybrid --work-from-home-days 2 --dry-run
 .EE
 .TP
+Preview with Moldova weekend-holiday carryover:
+.EX
+fusionctl timesheet log-week --project WORDV266 --task 02 --holiday-calendar moldova --dry-run
+.EE
+.TP
+Refresh Moldova holidays for 2026:
+.EX
+fusionctl timesheet refresh-holidays --holiday-calendar moldova --year 2026
+.EE
+.TP
 Show maximum diagnostic logging:
 .EX
 fusionctl -vvv auth status
@@ -125,6 +152,9 @@ Fallback local session file when OS keyring storage is unavailable.
 .TP
 .I ~/.fusion-cli/cache
 Local cache directory for read workflows.
+.TP
+.I ./.fusionctl/holiday-calendars
+Working-directory cache for public holiday calendars.
 .SH ENVIRONMENT
 .TP
 .B FUSION_ORACLE_BASE_URL
