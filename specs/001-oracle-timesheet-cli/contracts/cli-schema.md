@@ -54,7 +54,7 @@ fusion/                        # Main group (app.callback)
 ```
 CLI Name: fusion
 Description: Oracle Fusion Timesheet CLI - Manage timesheets locally without web UI
-Version: 1.1.0
+Version: 1.1.1
 Usage: fusion [OPTIONS] COMMAND [ARGS]...
 ```
 

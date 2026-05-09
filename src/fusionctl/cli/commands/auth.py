@@ -107,11 +107,11 @@ def status() -> None:
 
     if session is None:
         exit_with_error(
-            "Status: Not authenticated. Use 'fusion auth login --token' to begin.", code=1
+            "Status: Not authenticated. Use 'fusionctl auth login' to begin.", code=1
         )
     if not is_valid:
         exit_with_error(
-            "Status: Session expired. Use 'fusion auth login --token' to refresh.", code=2
+            "Status: Session expired. Use 'fusionctl auth login' to refresh.", code=2
         )
 
     assert session is not None

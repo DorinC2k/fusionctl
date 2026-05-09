@@ -1,6 +1,7 @@
 from typer.testing import CliRunner
 
 from fusionctl.main import app
+from fusionctl.main import _normalize_optional_token_prompt_args
 
 runner = CliRunner()
 
@@ -20,6 +21,19 @@ def test_auth_login_status_logout(monkeypatch, tmp_path) -> None:
     logout_result = runner.invoke(app, ["auth", "logout"])
     assert logout_result.exit_code == 0
     assert "Session cleared" in logout_result.stdout
+
+
+def test_auth_login_token_without_value_prompts_securely(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("FUSION_APP_DIR", str(tmp_path))
+
+    argv = ["fusionctl", "auth", "login", "--token"]
+    _normalize_optional_token_prompt_args(argv)
+
+    result = runner.invoke(app, argv[1:], input="bm_sv=abc\n")
+
+    assert result.exit_code == 0
+    assert "Authenticated" in result.stdout
+    assert "abc" not in result.stdout
 
 
 def test_auth_login_accepts_browser_mode_options(monkeypatch, tmp_path) -> None:

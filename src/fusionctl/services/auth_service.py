@@ -25,7 +25,7 @@ class AuthService:
     def require_session(self) -> Session:
         session = self.get_session()
         if session is None or not session.is_valid:
-            raise AuthenticationError("Not authenticated. Use 'fusion auth login --token' to begin.")
+            raise AuthenticationError("Not authenticated. Use 'fusionctl auth login' to begin.")
         return session
 
     def status(self) -> tuple[bool, Session | None]:

@@ -1,5 +1,5 @@
-from fusionctl.main import app
+from fusionctl.main import run
 
 
 if __name__ == "__main__":
-    app()
+    run()

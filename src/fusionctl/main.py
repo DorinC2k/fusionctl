@@ -1,3 +1,5 @@
+import sys
+
 import typer
 
 from fusionctl import __version__
@@ -51,3 +53,23 @@ def main(
 
 app.add_typer(auth.app, name="auth")
 app.add_typer(timesheet.app, name="timesheet")
+
+
+def run() -> None:
+    """Console entrypoint with small argv compatibility fixes."""
+    _normalize_optional_token_prompt_args(sys.argv)
+    app()
+
+
+def _normalize_optional_token_prompt_args(argv: list[str]) -> None:
+    try:
+        token_index = argv.index("--token")
+    except ValueError:
+        return
+    if _is_auth_login(argv) and (token_index == len(argv) - 1 or argv[token_index + 1].startswith("-")):
+        del argv[token_index]
+
+
+def _is_auth_login(argv: list[str]) -> bool:
+    args = [arg for arg in argv[1:] if not arg.startswith("-")]
+    return args[:2] == ["auth", "login"]
