@@ -109,14 +109,14 @@ onlyData=true
 
 **Request Example**:
 ```bash
-GET /hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/employmentInfo?fields=%2BLegislationCode%2B%2BAssignmentName%2B%2BDisplayName%2B%2BPersonNumber%2B%2BLegalEntityId%2B%2BLegalEmployerName%2B%2BBusinessUnitId%2B%2BPersonId%2B%2BAssignmentId%2B%2BAssignmentNumber&finder=findByPersonId%3BPersonId%3D100000000355154&limit=1&onlyData=true
+GET /hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/employmentInfo?fields=%2BLegislationCode%2B%2BAssignmentName%2B%2BDisplayName%2B%2BPersonNumber%2B%2BLegalEntityId%2B%2BLegalEmployerName%2B%2BBusinessUnitId%2B%2BPersonId%2B%2BAssignmentId%2B%2BAssignmentNumber&finder=findByPersonId%3BPersonId%3D100000000000000&limit=1&onlyData=true
 ```
 
 **Response** (200 OK):
 ```json
 {
   "PersonNumber": "5237",
-  "PersonId": "100000000355154",
+  "PersonId": "100000000000000",
   "DisplayName": "Dorin Cobzac",
   "AssignmentId": "12345",
   "AssignmentNumber": "E123",
@@ -246,7 +246,7 @@ GET /hcmRestApi/rest/rv:ee7b954c-bcc8-4b41-bf6a-3a136a30223e/en/11.13.18.05:9/ti
     {
       "TimeCardId": "300005105736789",
       "TimeCardVersion": 2,
-      "PersonId": "100000000355154",
+      "PersonId": "100000000000000",
       "PersonNumber": "5237",
       "timeCards": {
         "items": [
@@ -328,7 +328,7 @@ Verified request:
 {
   "TimeCardId": 0,
   "TimeCardVersion": 0,
-  "PersonId": "100000000355154",
+  "PersonId": "100000000000000",
   "StartDate": "2026-05-04T00:00:00+00:00",
   "StopDate": "2026-05-10T23:59:59.999+00:00",
   "UserContext": "WORKER"
@@ -410,7 +410,7 @@ Verified request shape:
 {
   "TimeCardId": "300005124780107",
   "TimeCardVersion": 2,
-  "PersonId": "100000000355154",
+  "PersonId": "100000000000000",
   "StartDate": "2026-05-04T00:00:00+00:00",
   "StopDate": "2026-05-10T23:59:59.999+00:00",
   "ProcessMode": "TIME_SAVE",
@@ -436,7 +436,7 @@ Oracle returned `404`, even though the authenticated user has the time-card dele
 {
   "TimeCardId": "300005124780107",
   "TimeCardVersion": 1,
-  "PersonId": "100000000355154",
+  "PersonId": "100000000000000",
   "StartDate": "2026-05-04T00:00:00+00:00",
   "StopDate": "2026-05-10T23:59:59.999+00:00",
   "ProcessMode": "TIME_SAVE",
@@ -451,7 +451,7 @@ Oracle returned `404`, even though the authenticated user has the time-card dele
       "StartTime": null,
       "StopTime": null,
       "Measure": "1",
-      "PersonId": "100000000355154",
+      "PersonId": "100000000000000",
       "Comments": "created by fusionctl",
       "GroupingSequence": 0,
       "EntryDate": "2026-05-04T00:00:00+00:00",
@@ -531,7 +531,7 @@ Verified update:
 {
   "TimeCardId": "300005124780107",
   "TimeCardVersion": 2,
-  "PersonId": "100000000355154",
+  "PersonId": "100000000000000",
   "StartDate": "2026-05-04T00:00:00+00:00",
   "StopDate": "2026-05-10T23:59:59.999+00:00",
   "ProcessMode": "TIME_SAVE",
@@ -570,7 +570,7 @@ Verified request shape:
 {
   "TimeCardId": "300005124780107",
   "TimeCardVersion": 2,
-  "PersonId": "100000000355154",
+  "PersonId": "100000000000000",
   "StartDate": "2026-05-04T00:00:00+00:00",
   "StopDate": "2026-05-10T23:59:59.999+00:00",
   "ProcessMode": "TIME_SUBMIT",
@@ -619,7 +619,7 @@ GET /timeCardFieldValues
   ?onlyData=true
   &offset=0
   &limit=25
-  &finder=findByWord;SearchTerm=WORDV266,TcfId=300004857566518,UserType=WORKER,PersonId=100000000355154,StartDate=2026-05-04,EndDate=2026-05-10
+  &finder=findByWord;SearchTerm=WORDV266,TcfId=300004857566518,UserType=WORKER,PersonId=100000000000000,StartDate=2026-05-04,EndDate=2026-05-10
 ```
 
 Verified response:
@@ -639,7 +639,7 @@ Verified response:
 Task lookup depends on project and assignment bindings:
 
 ```http
-finder=findByWord;SearchTerm=02,TcfId=300004857566519,UserType=WORKER,PersonId=100000000355154,StartDate=2026-05-04,EndDate=2026-05-10,BindTcfId1=300004857566486,BindTcfId2=300004857566518,BindTcf1Value=300000002560077,BindTcf2Value={PROJECT_CODE_ID}
+finder=findByWord;SearchTerm=02,TcfId=300004857566519,UserType=WORKER,PersonId=100000000000000,StartDate=2026-05-04,EndDate=2026-05-10,BindTcfId1=300004857566486,BindTcfId2=300004857566518,BindTcf1Value=300000002560077,BindTcf2Value={PROJECT_CODE_ID}
 ```
 
 ### 5. Legacy/Initial Mutation Hypothesis
@@ -728,7 +728,7 @@ limit=50
     {
       "attestationId": "500001",
       "timecardId": "300005105736789",
-      "personId": "100000000355154",
+      "personId": "100000000000000",
       "attestationStatus": "APPROVED",
       "attestationDate": "2026-05-08"
     }

@@ -13,7 +13,7 @@ from typing import Any
 from playwright.async_api import Page, Request, Response, async_playwright
 
 FOCUSED_URL = "https://eclf.fa.em2.oraclecloud.com/fscmUI/redwood/time/existing-timecards/view-summary"
-DEFAULT_USERNAME = "dorin.cobzac@endava.com"
+DEFAULT_USERNAME = os.getenv("FUSION_ORACLE_USERNAME", "user.com")
 OUTPUT_DIR = Path(".fusion-recon")
 
 SECRET_HEADER_NAMES = {"authorization", "cookie", "set-cookie", "x-csrf-token", "x-oracle-apmcs-request-id"}

@@ -72,7 +72,7 @@ fusion auth login [OPTIONS]
 **Options**:
 ```
 --token <token>                 # Session cookie token (obtain from browser DevTools Network tab)
-                                # Example: bm_sv=E3A8F9F36D259512CECA0FF7AAC9627A~...
+                                # Example: bm_sv=<redacted-cookie>~...
 --browser                       # Open/reuse persistent local browser profile and extract cookies
 --headless                      # Reuse browser profile without showing the browser window
 --url <url>                     # Oracle URL to open for browser-backed login
@@ -89,10 +89,10 @@ fusion auth login [OPTIONS]
 
 **Output on Success (Token Method)**:
 ```
-✓ Authenticated as: dorin.cobzac@endava.com (Person ID: 100000000355154)
+✓ Authenticated as: user@example.com (Person ID: 100000000000000)
   Session token stored securely in OS keychain
   Token retrieved from: eclf.fa.em2.oraclecloud.com
-  Person Number: 5237
+  Person Number: 0000
 ```
 
 **Output on Failure**:
@@ -113,7 +113,7 @@ fusion auth login [OPTIONS]
 $ fusion auth login --browser
 [Browser opens; first run may require 2FA]
 [CLI extracts session cookies automatically]
-✓ Authenticated as: dorin.cobzac@endava.com
+✓ Authenticated as: user@example.com
   Session token stored securely in OS keychain
   Browser profile: persistent local profile
 ```
@@ -132,16 +132,16 @@ $ fusion auth login --browser --headless
 $ fusion auth login --token
 Paste your session token (from browser DevTools):
 Enter token: [user pastes bm_sv=... ]
-✓ Authenticated as: dorin.cobzac@endava.com
+✓ Authenticated as: user@example.com
   Session token stored securely in OS keychain
 ```
 
 **Acceptance Scenario**:
 ```
-$ fusion auth login --token "bm_sv=E3A8F9F36D259512CECA0FF7AAC9627A~..."
-✓ Authenticated as: dorin.cobzac@endava.com (Person ID: 100000000355154)
+$ fusion auth login --token "bm_sv=<redacted-cookie>~..."
+✓ Authenticated as: user@example.com (Person ID: 100000000000000)
   Session token stored securely in OS keychain
-  Person Number: 5237
+  Person Number: 0000
 ```
 
 **Token Validation**:

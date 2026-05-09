@@ -326,7 +326,7 @@ Returns OpenAPI 3.0 schema for the resource
   "absenceHours": 0,
   "totalHours": 40,
   "personNumber": "5237",
-  "personId": "100000000355154",
+  "personId": "100000000000000",
   "exceptionPeriod": "27/04/26 - 03/05/26"
 }
 ```
@@ -378,7 +378,7 @@ Returns OpenAPI 3.0 schema for the resource
 
 **Implementation**:
 ```
-Cookie: bm_sv=E3A8F9F36D259512CECA0FF7AAC9627A~...; JSESSIONID=...
+Cookie: bm_sv=<redacted-cookie>~...; JSESSIONID=...
 ```
 
 **CLI Strategy**:
