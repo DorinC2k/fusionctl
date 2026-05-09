@@ -132,6 +132,16 @@ jobs:
 
       - name: Add Pages index
         run: |
+          cat > public/apt/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <meta charset="utf-8">
+          <title>fusionctl APT repository</title>
+          <h1>fusionctl APT repository</h1>
+          <p>APT source:</p>
+          <pre>deb [arch=amd64 trusted=yes] https://dorinc2k.github.io/fusionctl/apt stable main</pre>
+          HTML
+
           cat > public/index.html <<'HTML'
           <!doctype html>
           <html lang="en">
