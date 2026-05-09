@@ -75,7 +75,7 @@ Use a hybrid work pattern with two work-from-home days per week:
 fusionctl timesheet log-week --project WORDV266 --task 02 --work-pattern hybrid --work-from-home-days 2 --dry-run
 ```
 
-Current convenience commands expand weekdays and skip weekends. They dry-run by default; `--execute` is reserved for the Oracle batch-write integration.
+Current convenience commands expand weekdays and skip weekends. They execute by default; pass `--dry-run` to preview without writing.
 
 ## Documentation
 

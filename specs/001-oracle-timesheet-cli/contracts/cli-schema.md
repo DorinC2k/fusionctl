@@ -434,7 +434,7 @@ fusion timesheet log-week [OPTIONS]
 --refresh-holidays             # Refresh holiday cache before planning
 --holiday-cache-days <n>       # Refresh cached holidays older than this many days (default: 30; 0 = always)
 --notes <notes>                # Entry notes applied to each day (optional)
---dry-run / --execute          # Preview or write entries (default: dry-run while batch write is being wired)
+--dry-run / --execute          # Preview or write entries (default: execute; use --dry-run to preview)
 --help, -h                     # Show help
 ```
 

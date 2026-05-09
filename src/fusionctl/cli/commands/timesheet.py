@@ -148,7 +148,7 @@ def log_week(
         help="Refresh cached holidays older than this many days. Use 0 to always refresh.",
     ),
     notes: str | None = typer.Option(None, "--notes", help="Optional notes for each entry."),
-    dry_run: bool = typer.Option(True, "--dry-run/--execute", help="Preview instead of writing."),
+    dry_run: bool = typer.Option(False, "--dry-run/--execute", help="Preview instead of writing."),
 ) -> None:
     """Plan regular work logs for this week up to today."""
     _log_period(
@@ -207,7 +207,7 @@ def log_month(
         help="Refresh cached holidays older than this many days. Use 0 to always refresh.",
     ),
     notes: str | None = typer.Option(None, "--notes", help="Optional notes for each entry."),
-    dry_run: bool = typer.Option(True, "--dry-run/--execute", help="Preview instead of writing."),
+    dry_run: bool = typer.Option(False, "--dry-run/--execute", help="Preview instead of writing."),
 ) -> None:
     """Plan regular work logs for weekly timecards overlapping this month."""
     _log_period(
@@ -266,7 +266,7 @@ def log_last_month(
         help="Refresh cached holidays older than this many days. Use 0 to always refresh.",
     ),
     notes: str | None = typer.Option(None, "--notes", help="Optional notes for each entry."),
-    dry_run: bool = typer.Option(True, "--dry-run/--execute", help="Preview instead of writing."),
+    dry_run: bool = typer.Option(False, "--dry-run/--execute", help="Preview instead of writing."),
 ) -> None:
     """Plan regular work logs for every working day last month."""
     _log_period(

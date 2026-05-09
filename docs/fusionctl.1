@@ -61,9 +61,9 @@ Plan one regular work entry for each weekday in the previous calendar month.
 .B fusionctl timesheet refresh-holidays --holiday-calendar NAME [--year YYYY]
 Refresh the working-directory holiday calendar cache.
 .PP
-The period logging commands skip weekends. They currently dry-run by default. The
-.B --execute
-switch is reserved for the Oracle batch-write path and fails clearly until that path is wired into the CLI command.
+The period logging commands skip weekends. They execute by default; pass
+.B --dry-run
+to preview without writing.
 .PP
 Location defaults to
 .B Work from office (employment contract).

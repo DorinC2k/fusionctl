@@ -116,7 +116,7 @@ Logging commands refresh missing or stale cache files automatically. The default
 
 For `log-month`, fusionctl plans the full Monday-Sunday timecard weeks that overlap the current calendar month. This means the first planned week can include trailing days from the previous month, and the last planned week can include spillover days from the next month.
 
-`--dry-run` is the current default. `--execute` exists as the future write switch and currently fails clearly until the Oracle batch-write integration is wired into the CLI command path.
+Commands execute by default. Use `--dry-run` to preview without writing. The current Oracle batch-write command path still fails clearly until that integration is wired.
 
 ## Verbosity
 

@@ -89,7 +89,7 @@ def test_log_week_holiday_calendar_lists_public_holiday_carryover(monkeypatch) -
     assert "2026-05-08  1h  Public Holiday" in result.stdout
 
 
-def test_log_month_execute_fails_until_oracle_batch_write_is_wired() -> None:
+def test_log_month_without_dry_run_fails_until_oracle_batch_write_is_wired() -> None:
     result = runner.invoke(
         app,
         [
@@ -99,7 +99,6 @@ def test_log_month_execute_fails_until_oracle_batch_write_is_wired() -> None:
             "WORDV266",
             "--task",
             "02",
-            "--execute",
         ],
     )
 
