@@ -427,6 +427,9 @@ fusion timesheet log-week [OPTIONS]
 --hours <hours>                # Hours per working day (default: 8)
 --project <code>               # Project code (required)
 --task <code>                  # Task code (required)
+--location <value>             # Oracle location for every entry (default: Work from office (employment contract))
+--work-pattern <pattern>       # Location pattern: office|home|hybrid (default: office)
+--work-from-home-days <n>      # WFH days per week for hybrid pattern (default: 2)
 --notes <notes>                # Entry notes applied to each day (optional)
 --dry-run / --execute          # Preview or write entries (default: dry-run while batch write is being wired)
 --help, -h                     # Show help
@@ -435,13 +438,16 @@ fusion timesheet log-week [OPTIONS]
 **Behavior**:
 - Expands Monday through today for the current week.
 - Excludes weekends.
+- Defaults location to `Work from office (employment contract)`.
+- `--location "Work from home"` applies one location to every planned entry.
+- `--work-pattern hybrid --work-from-home-days 2` assigns the first two working days in each week to `Work from home`; remaining working days use `Work from office (employment contract)`.
 - Uses the same public-holiday, absence, and idempotency rules as `fusion timesheet log` when execution is wired.
 
 ---
 
 ### COMMAND: `fusion timesheet log-month`
 
-**Purpose**: Convenience command to log the same regular work allocation for each working day in the current month, capped at today
+**Purpose**: Convenience command to log the same regular work allocation for each working day in weekly timecards that overlap the current calendar month
 
 **Signature**:
 ```
@@ -451,7 +457,8 @@ fusion timesheet log-month [OPTIONS]
 **Options**: same as `fusion timesheet log-week`.
 
 **Behavior**:
-- Expands the first day of the current month through today.
+- Expands full Monday-Sunday timecard weeks that overlap the current calendar month.
+- Includes spillover weekdays from the previous or next month when those days belong to an overlapping weekly timecard.
 - Excludes weekends.
 - Uses the same public-holiday, absence, and idempotency rules as `fusion timesheet log` when execution is wired.
 

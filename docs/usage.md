@@ -52,6 +52,7 @@ fusionctl auth logout
 ## Timesheet Convenience Commands
 
 The convenience commands expand a period into one planned entry per working day. Weekends are skipped.
+The default Oracle location is `Work from office (employment contract)`.
 
 Current week, from Monday through today:
 
@@ -59,7 +60,7 @@ Current week, from Monday through today:
 fusionctl timesheet log-week --project WORDV266 --task 02 --dry-run
 ```
 
-Current month, from the first day of the month through today:
+Current month, covering every weekly timecard that overlaps the calendar month:
 
 ```bash
 fusionctl timesheet log-month --project WORDV266 --task 02 --dry-run
@@ -82,6 +83,22 @@ Add notes to every planned entry:
 ```bash
 fusionctl timesheet log-month --project WORDV266 --task 02 --notes "Regular project work" --dry-run
 ```
+
+Use one location for every planned entry:
+
+```bash
+fusionctl timesheet log-week --project WORDV266 --task 02 --location "Work from home" --dry-run
+```
+
+Plan a hybrid week with two work-from-home days and the rest from the office:
+
+```bash
+fusionctl timesheet log-week --project WORDV266 --task 02 --work-pattern hybrid --work-from-home-days 2 --dry-run
+```
+
+The hybrid pattern assigns the first working days in each week to `Work from home`. Remaining working days use `Work from office (employment contract)`.
+
+For `log-month`, fusionctl plans the full Monday-Sunday timecard weeks that overlap the current calendar month. This means the first planned week can include trailing days from the previous month, and the last planned week can include spillover days from the next month.
 
 `--dry-run` is the current default. `--execute` exists as the future write switch and currently fails clearly until the Oracle batch-write integration is wired into the CLI command path.
 

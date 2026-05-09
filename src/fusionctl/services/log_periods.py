@@ -6,11 +6,20 @@ from datetime import timedelta
 from decimal import Decimal
 from enum import Enum
 
+LOCATION_WORK_FROM_HOME = "Work from home"
+LOCATION_WORK_FROM_OFFICE = "Work from office (employment contract)"
+
 
 class LogPeriod(str, Enum):
     CURRENT_WEEK = "current-week"
     CURRENT_MONTH = "current-month"
     LAST_MONTH = "last-month"
+
+
+class WorkPattern(str, Enum):
+    OFFICE = "office"
+    HOME = "home"
+    HYBRID = "hybrid"
 
 
 @dataclass(frozen=True)
@@ -25,6 +34,7 @@ class PlannedLogEntry:
     hours: Decimal
     project: str
     task: str
+    location: str
     notes: str | None
 
 
@@ -37,12 +47,32 @@ def period_bounds(period: LogPeriod, *, today: Date | None = None) -> PeriodBoun
         return PeriodBounds(start=start, end=today)
 
     if period is LogPeriod.CURRENT_MONTH:
-        return PeriodBounds(start=today.replace(day=1), end=today)
+        first_day = today.replace(day=1)
+        next_month = _first_day_of_next_month(first_day)
+        last_day = next_month - timedelta(days=1)
+        return PeriodBounds(
+            start=_week_start(first_day),
+            end=_week_end(last_day),
+        )
 
     first_this_month = today.replace(day=1)
     last_previous_month = first_this_month - timedelta(days=1)
     first_previous_month = last_previous_month.replace(day=1)
     return PeriodBounds(start=first_previous_month, end=last_previous_month)
+
+
+def _first_day_of_next_month(value: Date) -> Date:
+    if value.month == 12:
+        return value.replace(year=value.year + 1, month=1, day=1)
+    return value.replace(month=value.month + 1, day=1)
+
+
+def _week_start(value: Date) -> Date:
+    return value - timedelta(days=value.weekday())
+
+
+def _week_end(value: Date) -> Date:
+    return _week_start(value) + timedelta(days=6)
 
 
 def working_days_between(start: Date, end: Date) -> list[Date]:
@@ -65,6 +95,9 @@ def plan_period_logs(
     hours: Decimal,
     project: str,
     task: str,
+    location: str | None = None,
+    work_pattern: WorkPattern = WorkPattern.OFFICE,
+    work_from_home_days: int = 2,
     notes: str | None = None,
     today: Date | None = None,
 ) -> list[PlannedLogEntry]:
@@ -73,15 +106,53 @@ def plan_period_logs(
         raise ValueError("Hours must be greater than zero")
     if hours > Decimal("24"):
         raise ValueError("Hours cannot exceed 24 per day")
+    if work_from_home_days < 0 or work_from_home_days > 5:
+        raise ValueError("Work-from-home days must be between 0 and 5")
 
     bounds = period_bounds(period, today=today)
+    working_days = working_days_between(bounds.start, bounds.end)
     return [
         PlannedLogEntry(
             date=entry_date,
             hours=hours,
             project=project,
             task=task,
+            location=_location_for_day(
+                entry_date,
+                explicit_location=location,
+                work_pattern=work_pattern,
+                work_from_home_days=work_from_home_days,
+                period_working_days=working_days,
+            ),
             notes=notes,
         )
-        for entry_date in working_days_between(bounds.start, bounds.end)
+        for entry_date in working_days
     ]
+
+
+def _location_for_day(
+    entry_date: Date,
+    *,
+    explicit_location: str | None,
+    work_pattern: WorkPattern,
+    work_from_home_days: int,
+    period_working_days: list[Date],
+) -> str:
+    if explicit_location:
+        return explicit_location
+    if work_pattern is WorkPattern.HOME:
+        return LOCATION_WORK_FROM_HOME
+    if (
+        work_pattern is WorkPattern.HYBRID
+        and _weekly_workday_index(entry_date, period_working_days) < work_from_home_days
+    ):
+        return LOCATION_WORK_FROM_HOME
+    return LOCATION_WORK_FROM_OFFICE
+
+
+def _weekly_workday_index(entry_date: Date, period_working_days: list[Date]) -> int:
+    week_start = entry_date - timedelta(days=entry_date.weekday())
+    days_in_week = [
+        day for day in period_working_days if week_start <= day <= week_start + timedelta(days=6)
+    ]
+    return days_in_week.index(entry_date)

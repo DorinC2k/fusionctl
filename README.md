@@ -51,7 +51,7 @@ Preview logging 8h for each working day in the current week:
 fusionctl timesheet log-week --project WORDV266 --task 02 --dry-run
 ```
 
-Preview the current month up to today:
+Preview every weekly timecard that overlaps the current calendar month:
 
 ```bash
 fusionctl timesheet log-month --project WORDV266 --task 02 --dry-run
@@ -67,6 +67,12 @@ Use different daily hours or notes:
 
 ```bash
 fusionctl timesheet log-week --hours 7.5 --project WORDV266 --task 02 --notes "Delivery work"
+```
+
+Use a hybrid work pattern with two work-from-home days per week:
+
+```bash
+fusionctl timesheet log-week --project WORDV266 --task 02 --work-pattern hybrid --work-from-home-days 2 --dry-run
 ```
 
 Current convenience commands expand weekdays and skip weekends. They dry-run by default; `--execute` is reserved for the Oracle batch-write integration.
