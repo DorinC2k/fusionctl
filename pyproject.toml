@@ -37,6 +37,7 @@ typecheck = "mypy src"
 clean = "python scripts/clean_artifacts.py"
 bundle = ["clean", { cmd = "python scripts/build_standalone.py" }]
 bundle-onedir = ["clean", { cmd = "python scripts/build_standalone.py --onedir" }]
+package-linux = "python scripts/package_linux.py"
 
 [tool.ruff]
 line-length = 100

@@ -55,6 +55,14 @@ jobs:
       - name: Smoke test executable
         run: python -c "import subprocess; subprocess.run([r'${{ matrix.executable }}', '--version'], check=True)"
 
+      - name: Install Linux package tooling
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y rpm
+
+      - name: Build Linux packages
+        if: runner.os == 'Linux'
+        run: poetry run poe package-linux
+
       - name: Archive Linux artifact
         if: runner.os == 'Linux'
         run: tar -czf ${{ matrix.archive }} -C dist fusionctl
@@ -68,5 +76,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: ${{ matrix.archive }}
+          path: |
+            ${{ matrix.archive }}
+            dist/*.deb
+            dist/*.rpm
           if-no-files-found: error
