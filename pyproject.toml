@@ -34,8 +34,9 @@ test = "pytest"
 lint = "ruff check src tests"
 format = "ruff format src tests"
 typecheck = "mypy src"
-bundle = "python scripts/build_standalone.py"
-bundle-onedir = "python scripts/build_standalone.py --onedir"
+clean = "python scripts/clean_artifacts.py"
+bundle = ["clean", { cmd = "python scripts/build_standalone.py" }]
+bundle-onedir = ["clean", { cmd = "python scripts/build_standalone.py --onedir" }]
 
 [tool.ruff]
 line-length = 100

@@ -17,6 +17,7 @@ From a development checkout:
 
 ```bash
 poetry install --with dev
+poetry run poe clean
 poetry run poe bundle
 ```
 
@@ -31,6 +32,8 @@ For a directory-style build that is easier to inspect:
 ```bash
 poetry run poe bundle-onedir
 ```
+
+Both bundle tasks run `poe clean` first, removing `dist/`, PyInstaller work files, Python bytecode caches, and test/type/lint caches before packaging.
 
 ## GitHub Actions
 
