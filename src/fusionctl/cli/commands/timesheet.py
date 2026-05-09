@@ -94,6 +94,8 @@ def _log_period(
             console.print(
                 f"  Skipped {result.skipped_dates} dates with Oracle prefilled leave or holidays"
             )
+        if result.skipped_timecards:
+            console.print(f"  Skipped {result.skipped_timecards} approved timecards")
 
 
 def _load_holiday_dates(

@@ -25,6 +25,21 @@ DETAIL_EXPAND = (
     "timeCards.timeEntries.changeRequests"
 )
 FUSIONCTL_COMMENT_PREFIX = "created by fusionctl"
+RESPONSE_METADATA_KEYS = {"links", "ReadOnlyFlag"}
+TIME_ENTRY_PAYLOAD_KEYS = {
+    "TimeEntryId",
+    "TimeEntryVersion",
+    "TimeCardId",
+    "UnitOfMeasure",
+    "StartTime",
+    "StopTime",
+    "Measure",
+    "PersonId",
+    "Comments",
+    "GroupingSequence",
+    "EntryDate",
+}
+TIME_FIELD_VALUE_PAYLOAD_KEYS = {"TimeCardFieldId", "Value"}
 
 
 @dataclass(frozen=True)
@@ -32,6 +47,7 @@ class TimecardExecutionResult:
     written_entries: int
     skipped_dates: int
     processed_cards: int
+    skipped_timecards: int = 0
 
 
 async def execute_period_logs(entries: Sequence[PlannedLogEntry]) -> TimecardExecutionResult:
@@ -70,13 +86,20 @@ class TimecardExecutor:
 
     async def execute(self, entries: Sequence[PlannedLogEntry]) -> TimecardExecutionResult:
         if not entries:
-            return TimecardExecutionResult(written_entries=0, skipped_dates=0, processed_cards=0)
+            return TimecardExecutionResult(
+                written_entries=0,
+                skipped_dates=0,
+                processed_cards=0,
+                skipped_timecards=0,
+            )
 
         await self.client.refresh_bearer_token()
         cards = await self._find_cards(min(entry.date for entry in entries), max(entry.date for entry in entries))
         by_week = _group_by_week(entries)
         written_entries = 0
         skipped_dates = 0
+        skipped_timecards = 0
+        known_time_type_values: dict[TimeType, str] = {}
 
         for week, planned_entries in by_week.items():
             card_summary = _find_card_for_week(cards, week)
@@ -95,14 +118,22 @@ class TimecardExecutor:
 
             detail = await self._fetch_detail(str(card_summary["TimeCardId"]))
             card = _extract_card(detail)
+            existing_entries = _entries(card)
+            known_time_type_values.update(_time_type_value_map(existing_entries, self.settings))
             if self.person_id is None:
                 self.person_id = str(detail.get("PersonId") or card.get("PersonId") or "")
+            if _is_approved_card(card, card_summary):
+                skipped_timecards += 1
+                continue
 
             project_value = await self._lookup_project(planned_entries[0], week)
             task_value = await self._lookup_task(planned_entries[0], week, project_value)
-            time_type_values = await self._lookup_time_types(planned_entries, week)
 
-            existing_entries = _entries(card)
+            time_type_values = await self._lookup_time_types(
+                planned_entries,
+                week,
+                known_time_type_values,
+            )
             blocked_dates = _prefilled_blocked_dates(existing_entries)
             writable_entries = [entry for entry in planned_entries if entry.date not in blocked_dates]
             skipped_dates += len({entry.date for entry in planned_entries if entry.date in blocked_dates})
@@ -144,16 +175,33 @@ class TimecardExecutor:
             written_entries=written_entries,
             skipped_dates=skipped_dates,
             processed_cards=len(by_week),
+            skipped_timecards=skipped_timecards,
         )
 
     async def _find_cards(self, start: Date, end: Date) -> list[dict[str, Any]]:
         payload: dict[str, Any] = {
-            "timecardDateRangeDetail": {
-                "timecardDateFrom": start.isoformat(),
-                "timecardDateTo": end.isoformat(),
-            },
+            "displayFields": [
+                "TimePeriodStartDate",
+                "TimePeriodEndDate",
+                "StatusCode",
+                "ReportedHours",
+                "ScheduledHours",
+                "AbsenceHours",
+                "TotalHours",
+                "SubmissionDate",
+                "Exception",
+            ],
+            "filters": [
+                {
+                    "name": ["TimePeriod"],
+                    "values": [_start_of_day(start), _end_of_day(end)],
+                }
+            ],
             "limit": 100,
             "offset": 0,
+            "query": "",
+            "searchFields": ["Status"],
+            "sort": [{"direction": "ASC", "name": "TimePeriodStartDate"}],
         }
         data = await self.client.post(self.endpoints.timecards_search(), payload)
         result = data.get("result")
@@ -187,7 +235,7 @@ class TimecardExecutor:
             "StopDate": card.get("StopDate"),
             "UserContext": "WORKER",
             "IgnoreWarningsFlag": False,
-            "timeEntries": entries,
+            "timeEntries": [_time_entry_payload(entry) for entry in entries],
         }
         await self.client.save_timecard_entries(self.endpoints.api_root, payload)
 
@@ -218,9 +266,13 @@ class TimecardExecutor:
         self,
         entries: Sequence[PlannedLogEntry],
         week: tuple[Date, Date],
+        known_values: Mapping[TimeType, str],
     ) -> dict[TimeType, str]:
         values: dict[TimeType, str] = {}
         for time_type in {entry.time_type for entry in entries}:
+            if time_type in known_values:
+                values[time_type] = known_values[time_type]
+                continue
             values[time_type] = await self._lookup_code(
                 search_term=time_type.value,
                 field_id=self.settings.oracle_field_time_type,
@@ -295,6 +347,10 @@ def _extract_card(detail: Mapping[str, Any]) -> dict[str, Any]:
     raise OracleApiError("Oracle timecard detail response did not include nested timeCards")
 
 
+def _is_approved_card(card: Mapping[str, Any], card_summary: Mapping[str, Any]) -> bool:
+    return card.get("Status") == "APPROVED" or card_summary.get("StatusCode") == "APPROVED"
+
+
 def _entries(card: Mapping[str, Any]) -> list[dict[str, Any]]:
     time_entries = card.get("timeEntries")
     if isinstance(time_entries, Mapping) and isinstance(time_entries.get("items"), list):
@@ -351,6 +407,22 @@ def _build_time_entry(
     time_type_value: str,
     settings: Settings,
 ) -> dict[str, Any]:
+    field_values = [
+        {"TimeCardFieldId": settings.oracle_field_time_type, "Value": time_type_value},
+        {"TimeCardFieldId": settings.oracle_field_location, "Value": entry.location},
+        {"TimeCardFieldId": settings.oracle_field_payroll_time_type, "Value": None},
+        {"TimeCardFieldId": settings.oracle_field_absence, "Value": None},
+        {"TimeCardFieldId": settings.oracle_field_assignment, "Value": settings.oracle_assignment_value},
+        {"TimeCardFieldId": settings.oracle_field_business_unit, "Value": settings.oracle_business_unit_value},
+        {"TimeCardFieldId": settings.oracle_field_entry_source, "Value": settings.oracle_entry_source_value},
+        {"TimeCardFieldId": settings.oracle_field_entry_context, "Value": settings.oracle_entry_context_value},
+    ]
+    if entry.time_type is TimeType.REGULAR:
+        field_values[0:0] = [
+            {"TimeCardFieldId": settings.oracle_field_project, "Value": project_value},
+            {"TimeCardFieldId": settings.oracle_field_task, "Value": task_value},
+        ]
+
     return {
         "TimeEntryId": 0,
         "TimeEntryVersion": 0,
@@ -363,18 +435,7 @@ def _build_time_entry(
         "Comments": entry.notes or FUSIONCTL_COMMENT_PREFIX,
         "GroupingSequence": 0,
         "EntryDate": _start_of_day(entry.date),
-        "timeCardFieldValues": [
-            {"TimeCardFieldId": settings.oracle_field_project, "Value": project_value},
-            {"TimeCardFieldId": settings.oracle_field_task, "Value": task_value},
-            {"TimeCardFieldId": settings.oracle_field_time_type, "Value": time_type_value},
-            {"TimeCardFieldId": settings.oracle_field_location, "Value": entry.location},
-            {"TimeCardFieldId": settings.oracle_field_payroll_time_type, "Value": None},
-            {"TimeCardFieldId": settings.oracle_field_absence, "Value": None},
-            {"TimeCardFieldId": settings.oracle_field_assignment, "Value": settings.oracle_assignment_value},
-            {"TimeCardFieldId": settings.oracle_field_business_unit, "Value": settings.oracle_business_unit_value},
-            {"TimeCardFieldId": settings.oracle_field_entry_source, "Value": settings.oracle_entry_source_value},
-            {"TimeCardFieldId": settings.oracle_field_entry_context, "Value": settings.oracle_entry_context_value},
-        ],
+        "timeCardFieldValues": field_values,
     }
 
 
@@ -406,6 +467,62 @@ def _time_type_display(entry: Mapping[str, Any]) -> str | None:
             if display in {TimeType.REGULAR.value, TimeType.PUBLIC_HOLIDAY.value}:
                 return str(display)
     return None
+
+
+def _time_type_value_map(
+    entries: Sequence[Mapping[str, Any]],
+    settings: Settings,
+) -> dict[TimeType, str]:
+    values: dict[TimeType, str] = {}
+    for entry in entries:
+        for field in _field_values(entry):
+            if str(field.get("TimeCardFieldId")) != settings.oracle_field_time_type:
+                continue
+            display = field.get("DisplayValue")
+            value = field.get("Value")
+            if display == TimeType.REGULAR.value and value:
+                values[TimeType.REGULAR] = str(value)
+            if display == TimeType.PUBLIC_HOLIDAY.value and value:
+                values[TimeType.PUBLIC_HOLIDAY] = str(value)
+    return values
+
+
+def _field_values(entry: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    values = entry.get("timeCardFieldValues")
+    if isinstance(values, Mapping) and isinstance(values.get("items"), list):
+        return [item for item in values["items"] if isinstance(item, Mapping)]
+    if isinstance(values, list):
+        return [item for item in values if isinstance(item, Mapping)]
+    return []
+
+
+def _time_entry_payload(entry: Mapping[str, Any]) -> dict[str, Any]:
+    payload = {
+        key: _strip_response_metadata(value)
+        for key, value in entry.items()
+        if key in TIME_ENTRY_PAYLOAD_KEYS
+    }
+    payload["timeCardFieldValues"] = [
+        {
+            key: _strip_response_metadata(value)
+            for key, value in field.items()
+            if key in TIME_FIELD_VALUE_PAYLOAD_KEYS
+        }
+        for field in _field_values(entry)
+    ]
+    return payload
+
+
+def _strip_response_metadata(value: Any) -> Any:
+    if isinstance(value, Mapping):
+        return {
+            key: _strip_response_metadata(item)
+            for key, item in value.items()
+            if not str(key).startswith("@") and key not in RESPONSE_METADATA_KEYS
+        }
+    if isinstance(value, list):
+        return [_strip_response_metadata(item) for item in value]
+    return value
 
 
 def _parse_date(value: Any) -> Date | None:

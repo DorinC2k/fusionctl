@@ -93,7 +93,12 @@ def test_log_week_holiday_calendar_lists_public_holiday_carryover(monkeypatch) -
 def test_log_month_without_dry_run_writes_planned_entries(monkeypatch) -> None:
     async def execute_period_logs(entries) -> TimecardExecutionResult:
         assert entries
-        return TimecardExecutionResult(written_entries=len(entries), skipped_dates=0, processed_cards=1)
+        return TimecardExecutionResult(
+            written_entries=len(entries),
+            skipped_dates=0,
+            processed_cards=1,
+            skipped_timecards=0,
+        )
 
     monkeypatch.setattr(
         "fusionctl.cli.commands.timesheet.execute_period_logs",
