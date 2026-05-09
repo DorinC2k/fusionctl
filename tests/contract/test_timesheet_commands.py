@@ -9,6 +9,10 @@ from fusionctl.services.holiday_calendar import HolidayCacheResult, PublicHolida
 runner = CliRunner()
 
 
+def normalized_output(value: str) -> str:
+    return " ".join(value.split())
+
+
 def test_log_week_dry_run_lists_planned_entries() -> None:
     result = runner.invoke(
         app,
@@ -24,10 +28,11 @@ def test_log_week_dry_run_lists_planned_entries() -> None:
     )
 
     assert result.exit_code == 0
-    assert "Planned" in result.stdout
-    assert "WORDV266 / 02" in result.stdout
-    assert "Work from office (employment contract)" in result.stdout
-    assert "Total:" in result.stdout
+    output = normalized_output(result.stdout)
+    assert "Planned" in output
+    assert "WORDV266 / 02" in output
+    assert "Work from office (employment contract)" in output
+    assert "Total:" in output
 
 
 def test_log_week_hybrid_location_pattern_lists_home_and_office_entries() -> None:
@@ -49,8 +54,9 @@ def test_log_week_hybrid_location_pattern_lists_home_and_office_entries() -> Non
     )
 
     assert result.exit_code == 0
-    assert "Work from home" in result.stdout
-    assert "Work from office (employment contract)" in result.stdout
+    output = normalized_output(result.stdout)
+    assert "Work from home" in output
+    assert "Work from office (employment contract)" in output
 
 
 def test_log_week_holiday_calendar_lists_public_holiday_carryover(monkeypatch) -> None:
