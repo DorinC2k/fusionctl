@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-from pathlib import Path
 from collections.abc import Mapping, Sequence
+from pathlib import Path
 from typing import Any
 
 from fusionctl.exceptions import AuthenticationError
@@ -13,6 +13,7 @@ DEFAULT_ORACLE_TIMECARDS_URL = (
     "https://eclf.fa.em2.oraclecloud.com/fscmUI/redwood/time/existing-timecards/view-summary"
 )
 COOKIE_DOMAINS = ("oraclecloud.com", "oracle.endava.com")
+STAY_SIGNED_IN_BUTTONS = ("Yes", "Da")
 
 
 class BrowserAuthService:
@@ -57,6 +58,14 @@ class BrowserAuthService:
                 await page.goto(url, wait_until="domcontentloaded", timeout=timeout_seconds * 1000)
                 await self._wait_for_oracle_session(page, timeout_seconds=timeout_seconds)
                 cookies = await context.cookies()
+            except Exception as exc:
+                if _is_target_closed_error(exc):
+                    raise AuthenticationError(
+                        "Browser login was closed before the Oracle session was captured. "
+                        "Run 'fusionctl auth login --browser' again and leave the window open "
+                        "until fusionctl closes it."
+                    ) from exc
+                raise
             finally:
                 await context.close()
 
@@ -74,11 +83,29 @@ class BrowserAuthService:
     async def _wait_for_oracle_session(self, page: Any, *, timeout_seconds: int) -> None:
         deadline = asyncio.get_running_loop().time() + timeout_seconds
         while asyncio.get_running_loop().time() < deadline:
+            await self._accept_stay_signed_in_prompt(page)
             if "oraclecloud.com" in page.url:
                 if await self._tokenrelay_is_available(page):
                     return
-            await page.wait_for_timeout(1000)
+            try:
+                await page.wait_for_timeout(1000)
+            except Exception as exc:
+                if _is_target_closed_error(exc):
+                    raise AuthenticationError(
+                        "Browser login was closed before the Oracle session was captured."
+                    ) from exc
+                raise
         raise AuthenticationError("Timed out waiting for Oracle login to finish")
+
+    async def _accept_stay_signed_in_prompt(self, page: Any) -> None:
+        for label in STAY_SIGNED_IN_BUTTONS:
+            try:
+                button = page.get_by_role("button", name=label, exact=True)
+                if await button.count():
+                    await button.first.click(timeout=1000)
+                    return
+            except Exception:
+                continue
 
     async def _tokenrelay_is_available(self, page: Any) -> bool:
         try:
@@ -108,6 +135,10 @@ class BrowserAuthService:
             )
         except Exception:
             return False
+
+
+def _is_target_closed_error(exc: Exception) -> bool:
+    return "Target page, context or browser has been closed" in str(exc)
 
 
 def cookie_header_from_playwright(cookies: Sequence[Mapping[str, Any]]) -> str:

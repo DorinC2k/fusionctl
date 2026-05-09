@@ -103,7 +103,7 @@ class OracleClient:
         headers = {
             "Accept": "application/json",
             "Cookie": self.cookie_header,
-            "User-Agent": "fusionctl/1.1.1",
+            "User-Agent": "fusionctl/1.1.2",
         }
         if xsrf_token := self._xsrf_token():
             headers["x-xsrf-token"] = xsrf_token
@@ -124,7 +124,7 @@ class OracleClient:
             "Accept": "application/json",
             "Content-Type": content_type,
             "Cookie": self.cookie_header,
-            "User-Agent": "fusionctl/1.1.1",
+            "User-Agent": "fusionctl/1.1.2",
         }
         if self._bearer_token:
             headers["Authorization"] = f"Bearer {self._bearer_token}"
