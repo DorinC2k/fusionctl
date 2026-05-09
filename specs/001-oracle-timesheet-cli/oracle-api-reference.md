@@ -35,7 +35,7 @@ The Redwood web app also calls:
 GET /fscmRestApi/tokenrelay
 ```
 
-The response contains a short-lived bearer token. Real `timeCards` calls from the browser include both the browser session cookies and:
+The response contains a short-lived bearer token. Real metadata/action calls from the browser include both the browser session cookies and:
 
 ```http
 Authorization: Bearer <tokenrelay access_token>
@@ -54,6 +54,8 @@ For CLI implementation, the practical auth flow is:
 6. Refresh by calling tokenrelay again; if tokenrelay returns 401, reuse `fusion auth login --browser --headless` to harvest fresh cookies from the local profile.
 
 Live testing showed tokenrelay can return `401` unless the request includes the `x-xsrf-token` header copied from the Oracle `XSRF-TOKEN-*` cookie.
+
+Live `POST /timeCards` create/save/submit calls in this environment require `Content-Type: application/json`; using `application/vnd.oracle.adf.action+json` for those parent-resource writes returned Oracle `27503` invalid-structure errors.
 
 ### Session Expiry
 
@@ -387,6 +389,42 @@ When logging regular work, the CLI must treat dates with an existing absence row
 Before adding planned rows to the full-card save payload, compare each planned allocation against the latest `timeEntries` from Oracle. If an existing row has the same date, time type, and hours, do not add another row. This prevents repeated CLI runs from stacking duplicate hours for the same day.
 
 For public-holiday split days, idempotency is checked per row. If `7 Regular` already exists but `1 Public Holiday` is missing, create only the missing `1 Public Holiday` row. If both rows already exist, submit no new allocations.
+
+#### Clear Timecard Rows (Verified Live)
+
+Clearing a timecard should use the verified parent-save workflow, not a child-row delete endpoint. Because `timeEntries` behaves as the desired complete row set, clearing means saving a full card payload whose `timeEntries` array contains only rows that Oracle owns and the CLI must preserve:
+
+- preserve `Public Holiday` rows
+- preserve rows with `AbsenceEntryFlag`, such as `Annual Leave MD` or `Medical Leave MD`
+- remove user-entered regular work rows from the payload
+
+Verified request shape:
+
+```json
+{
+  "TimeCardId": "300005124780107",
+  "TimeCardVersion": 2,
+  "PersonId": "100000000355154",
+  "StartDate": "2026-05-04T00:00:00+00:00",
+  "StopDate": "2026-05-10T23:59:59.999+00:00",
+  "ProcessMode": "TIME_SAVE",
+  "UserContext": "WORKER",
+  "IgnoreWarningsFlag": false,
+  "timeEntries": ["only preserved public holiday and absence rows"]
+}
+```
+
+Live verification on `2026-05-09` used editable future card `300005124780913`: adding one regular row changed the card to one positive row, and clearing with an empty preserved set saved successfully, leaving zero positive rows.
+
+#### Delete Timecard (Not Available Through Parent Resource)
+
+The expected parent-resource endpoint was tested against editable future card `300005124780913`:
+
+```http
+DELETE /timeCards/{TIMECARD_ID}
+```
+
+Oracle returned `404`, even though the authenticated user has the time-card delete duty. Until browser traffic or Oracle metadata reveals the Redwood delete action, treat full timecard deletion as unavailable in the CLI and use the verified clear workflow to remove user-entered rows from editable cards.
 
 ```json
 {

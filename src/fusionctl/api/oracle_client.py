@@ -23,9 +23,20 @@ class OracleClient:
             response = await client.get(url, params=params)
         return self._decode(response)
 
-    async def post(self, url: str, payload: dict[str, object]) -> dict[str, object]:
-        async with self._client() as client:
+    async def post(
+        self,
+        url: str,
+        payload: dict[str, object],
+        *,
+        content_type: str = "application/vnd.oracle.adf.action+json",
+    ) -> dict[str, object]:
+        async with self._client(content_type=content_type) as client:
             response = await client.post(url, json=payload)
+        return self._decode(response)
+
+    async def delete(self, url: str) -> dict[str, object]:
+        async with self._client() as client:
+            response = await client.delete(url)
         return self._decode(response)
 
     async def create_timecard(
@@ -44,7 +55,11 @@ class OracleClient:
             "StopDate": stop_date,
             "UserContext": "WORKER",
         }
-        return await self.post(f"{api_root.rstrip('/')}/timeCards", payload)
+        return await self.post(
+            f"{api_root.rstrip('/')}/timeCards",
+            payload,
+            content_type="application/json",
+        )
 
     async def save_timecard_entries(
         self,
@@ -53,6 +68,28 @@ class OracleClient:
     ) -> dict[str, object]:
         """Save card entries using Oracle Redwood's verified parent-save workflow."""
         return await self._process_timecard(api_root, payload, process_mode="TIME_SAVE")
+
+    async def clear_timecard_entries(
+        self,
+        api_root: str,
+        payload: dict[str, Any],
+        *,
+        preserved_time_entries: list[dict[str, Any]],
+    ) -> dict[str, object]:
+        """Clear user-entered rows by saving only the entries Oracle must preserve."""
+        clear_payload: dict[str, Any] = {
+            **payload,
+            "timeEntries": preserved_time_entries,
+        }
+        return await self._process_timecard(api_root, clear_payload, process_mode="TIME_SAVE")
+
+    async def delete_timecard(
+        self,
+        api_root: str,
+        timecard_id: str,
+    ) -> dict[str, object]:
+        """Attempt parent-resource deletion; live Oracle may return 404."""
+        return await self.delete(f"{api_root.rstrip('/')}/timeCards/{timecard_id}")
 
     async def submit_timecard(
         self,
@@ -82,10 +119,10 @@ class OracleClient:
         self._bearer_token = token
         return token
 
-    def _client(self) -> httpx.AsyncClient:
+    def _client(self, *, content_type: str = "application/vnd.oracle.adf.action+json") -> httpx.AsyncClient:
         headers = {
             "Accept": "application/json",
-            "Content-Type": "application/vnd.oracle.adf.action+json",
+            "Content-Type": content_type,
             "Cookie": self.cookie_header,
             "User-Agent": "fusionctl/0.1.0",
         }
@@ -118,7 +155,11 @@ class OracleClient:
             "UserContext": payload.get("UserContext", "WORKER"),
             "IgnoreWarningsFlag": payload.get("IgnoreWarningsFlag", False),
         }
-        return await self.post(f"{api_root.rstrip('/')}/timeCards", process_payload)
+        return await self.post(
+            f"{api_root.rstrip('/')}/timeCards",
+            process_payload,
+            content_type="application/json",
+        )
 
     def _decode(self, response: httpx.Response) -> dict[str, object]:
         if response.status_code in {401, 403}:

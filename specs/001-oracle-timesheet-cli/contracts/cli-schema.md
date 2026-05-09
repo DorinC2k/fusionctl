@@ -19,6 +19,8 @@ fusion/                        # Main group (app.callback)
 │   ├── view                   # View specific timesheet details
 │   ├── log                    # Log hours to a timesheet
 │   ├── update                 # Update a time entry
+│   ├── clear                  # Clear editable user-entered rows
+│   ├── delete                 # Delete an editable timecard
 │   └── summary                # Show timesheet summary
 ├── cache                      # Cache management
 │   ├── clear                  # Clear all cache
@@ -447,6 +449,97 @@ ENTRY_ID                       # Oracle time entry ID (required)
   Hours: 8.0 → 9.0
   Notes: "Regular work" → "Regular work + standup"
 ```
+
+---
+
+### COMMAND: `fusion timesheet clear`
+
+**Purpose**: Remove editable user-entered rows from a timecard while preserving Oracle-owned non-working rows
+
+**Signature**:
+```
+fusion timesheet clear <TIMECARD_ID> [OPTIONS]
+```
+
+**Arguments**:
+```
+TIMECARD_ID                    # Oracle timecard ID (required)
+```
+
+**Options**:
+```
+--yes, -y                      # Skip confirmation prompt
+--dry-run                      # Show rows that would be removed/preserved without saving
+--help, -h                     # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Timecard cleared or no editable rows found
+1   — Failure: Not authenticated
+2   — Failure: Timecard not found
+3   — Failure: Timecard is read-only
+4   — Failure: User cancelled confirmation
+```
+
+**Output on Success**:
+```
+✓ Timecard cleared
+  Removed: 5 user-entered rows
+  Preserved: 1 public holiday row, 0 absence rows
+```
+
+**Behavior**:
+- Fetch latest timecard details first.
+- Preserve rows with `Public Holiday` time type.
+- Preserve rows with `AbsenceEntryFlag`, e.g. `Annual Leave MD`.
+- Save the card with `ProcessMode=TIME_SAVE` and only preserved rows in `timeEntries`.
+
+---
+
+### COMMAND: `fusion timesheet delete`
+
+**Purpose**: Delete an editable draft/entered timecard after explicit confirmation, when Oracle exposes a working delete action
+
+**Signature**:
+```
+fusion timesheet delete <TIMECARD_ID> [OPTIONS]
+```
+
+**Arguments**:
+```
+TIMECARD_ID                    # Oracle timecard ID (required)
+```
+
+**Options**:
+```
+--yes, -y                      # Skip confirmation prompt
+--dry-run                      # Show target timecard without deleting it
+--help, -h                     # Show help
+```
+
+**Exit Codes**:
+```
+0   — Success: Timecard deleted
+1   — Failure: Not authenticated
+2   — Failure: Timecard not found
+3   — Failure: Oracle refused deletion, e.g. submitted/approved card
+4   — Failure: User cancelled confirmation
+5   — Failure: Delete endpoint/action is not available in this Oracle environment
+```
+
+**Output on Success**:
+```
+✓ Timecard deleted
+  ID: 300005124780107
+  Period: 2026-05-04 → 2026-05-10
+```
+
+**Safety**:
+- Must show period, status, reported hours, and entry count before confirmation.
+- Must not delete submitted or approved cards unless Oracle explicitly allows it.
+- Prefer `clear` when the user only wants to remove logged rows from an existing period.
+- Live testing on `2026-05-09` showed `DELETE /timeCards/{TIMECARD_ID}` returns `404` for an editable future card; until a working Redwood delete action is discovered, the CLI should fail with exit code 5 and recommend `fusion timesheet clear`.
 
 ---
 

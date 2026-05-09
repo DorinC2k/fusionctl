@@ -58,6 +58,8 @@ As a user, I need to log hours and activities to my timesheet via the CLI so I c
 5. **Given** a timecard contains a pre-added `Public Holiday` entry for a day, **When** the user logs the preceding working day for 8 hours, **Then** the CLI logs 7 hours as `Regular` and 1 hour as `Public Holiday` on the preceding working day
 6. **Given** a timecard contains a pre-filled absence day such as `Annual Leave MD`, **When** the user logs that same date, **Then** the CLI preserves the absence row and does not create a regular work entry for that date
 7. **Given** the CLI has already logged entries for a day, **When** the user repeats the same log command for that day, **Then** the CLI detects matching existing entries and does not stack duplicate hours
+8. **Given** a timecard has user-entered work rows, **When** the user clears the timecard, **Then** the CLI removes user-entered rows while preserving Oracle-owned public holiday and absence rows
+9. **Given** a draft or entered timecard exists, **When** the user deletes it with explicit confirmation, **Then** the CLI removes the timecard from Oracle if Oracle exposes a working delete action, otherwise it reports that deletion is unavailable and recommends clearing the card
 
 ---
 
@@ -123,6 +125,8 @@ As a user, I need to export timesheet data to CSV/JSON formats so I can use it i
 - **FR-014**: System MUST preserve Oracle pre-added `Public Holiday` days and split the preceding working day into 7h `Regular` plus 1h `Public Holiday` when logging a full 8-hour day
 - **FR-015**: System MUST preserve Oracle pre-filled absence entries such as `Annual Leave MD` and `Medical Leave MD` and avoid logging regular work on those dates
 - **FR-016**: System MUST make repeated log operations idempotent by skipping allocations that already exist for the same date, time type, and hours
+- **FR-017**: System MUST support clearing user-entered rows from an editable timecard while preserving Oracle-owned non-working rows
+- **FR-018**: System MUST support deleting draft or entered timecards only after explicit user confirmation
 
 ### Key Entities
 
